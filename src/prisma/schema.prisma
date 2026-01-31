@@ -11,3 +11,350 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+// ==========================
+// ENUMS
+// ==========================
+
+enum UserRole {
+  ADMIN
+  HOST
+  CUSTOMER
+}
+
+enum PropertyStatus {
+  DRAFT
+  PENDING_APPROVAL  // Admin review required
+  ACTIVE
+  INACTIVE
+  BLOCKED
+  REJECTED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED  // For reviews & payouts
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+  PAYMENT_FAILED
+}
+
+// ==========================
+// USER & AUTH
+// ==========================
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  phone         String?  @unique  // Required for Kuwait/MENA region
+  passwordHash  String
+  role          UserRole
+  isVerified    Boolean  @default(false)
+
+  // Host KYC (required for production)
+  fullName      String?
+  nationalId    String?  // Civil ID for Kuwait
+  isKycApproved Boolean  @default(false)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions      Session[]
+  properties    Property[]
+  bookings      Booking[]
+  subscriptions Subscription[]
+  auditLogs     AuditLog[]
+  reviews       Review[]
+}
+
+// Tracks login sessions (refresh tokens)
+model Session {
+  id               String   @id @default(uuid())
+  userId           String
+  refreshTokenHash String
+  expiresAt        DateTime
+
+  ipAddress        String?
+  userAgent        String?
+
+  createdAt        DateTime @default(now())
+
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ==========================
+// PROPERTY
+// ==========================
+
+model Property {
+  id               String         @id @default(uuid())
+  hostId           String
+
+  title            String
+  titleAr          String?        // Arabic title for i18n
+  description      String
+  descriptionAr    String?        // Arabic description
+
+  location         String
+  locationAr       String?        // Arabic location name
+  latitude         Float?
+  longitude        Float?
+
+  basePrice        Decimal        // Store in smallest unit (fils for KWD)
+  currency         String         @default("KWD") // ISO: KWD, USD, SAR
+
+  baseGuests       Int
+  maxGuests        Int
+  extraGuestPrice  Decimal?
+
+  status           PropertyStatus @default(DRAFT)
+  adminNotes       String?        // Rejection reason or notes
+
+  // SEO & discoverability
+  slug             String?        @unique
+  viewCount        Int            @default(0)
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  host             User           @relation(fields: [hostId], references: [id])
+  images           PropertyImage[]
+  bookings         Booking[]
+  amenities        PropertyAmenity[]
+  reviews          Review[]
+  blockedDates     BlockedDate[]
+
+  @@index([hostId])
+  @@index([status])
+  @@index([slug])
+}
+
+// Property images (stored in R2 / S3)
+model PropertyImage {
+  id         String   @id @default(uuid())
+  propertyId String
+  imageUrl  String
+  order     Int
+
+  property  Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+// ==========================
+// BOOKING
+// ==========================
+
+model Booking {
+  id            String        @id @default(uuid())
+  propertyId    String
+  customerId    String
+
+  checkIn       DateTime
+  checkOut      DateTime
+  guests        Int
+
+  subtotal      Decimal
+  extraCharges  Decimal       @default(0)
+  totalAmount   Decimal
+  currency      String
+
+  status        BookingStatus @default(PENDING)
+
+  // Cancellation policy
+  cancellationDeadline DateTime?
+  cancellationReason   String?
+  refundAmount        Decimal?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  property      Property      @relation(fields: [propertyId], references: [id])
+  customer      User          @relation(fields: [customerId], references: [id])
+  payment       Payment?
+  invoice       Invoice?
+  review        Review?
+
+  @@index([propertyId])
+  @@index([customerId])
+  @@index([status])
+  @@index([checkIn, checkOut]) // For availability queries
+}
+
+// ==========================
+// PAYMENTS
+// ==========================
+
+model Payment {
+  id            String        @id @default(uuid())
+  bookingId     String        @unique
+
+  provider      String        // stripe, myfatoorah, tap
+  providerRef   String
+  amount        Decimal
+  currency      String
+  status        PaymentStatus
+
+  createdAt     DateTime      @default(now())
+
+  booking       Booking       @relation(fields: [bookingId], references: [id])
+}
+
+// ==========================
+// INVOICES
+// ==========================
+
+model Invoice {
+  id            String   @id @default(uuid())
+  bookingId     String   @unique
+
+  invoiceNumber String   @unique
+  subtotal      Decimal
+  taxAmount     Decimal
+  totalAmount   Decimal
+  currency      String
+
+  pdfUrl        String
+  issuedAt      DateTime @default(now())
+
+  booking       Booking  @relation(fields: [bookingId], references: [id])
+}
+
+// ==========================
+// SUBSCRIPTIONS (HOST)
+// ==========================
+
+model Subscription {
+  id         String             @id @default(uuid())
+  hostId     String
+
+  planName   String
+  startsAt   DateTime
+  endsAt     DateTime
+  status     SubscriptionStatus @default(ACTIVE)
+
+  // Limits based on plan
+  maxListings        Int @default(1)
+  commissionRate     Decimal @default(10) // Platform fee %
+
+  // Payment tracking
+  paymentId          String?
+  paymentProvider    String?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  host       User     @relation(fields: [hostId], references: [id])
+
+  @@index([hostId])
+  @@index([status])
+  @@index([endsAt]) // For expiry cron jobs
+}
+
+// ==========================
+// AMENITIES (for filtering)
+// ==========================
+
+model Amenity {
+  id          String            @id @default(uuid())
+  name        String            @unique
+  nameAr      String
+  icon        String            // Icon name for UI
+  category    String            // wifi, parking, pool, etc.
+
+  properties  PropertyAmenity[]
+}
+
+model PropertyAmenity {
+  id         String   @id @default(uuid())
+  propertyId String
+  amenityId  String
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id])
+
+  @@unique([propertyId, amenityId])
+  @@index([propertyId])
+}
+
+// ==========================
+// REVIEWS (Essential for trust)
+// ==========================
+
+model Review {
+  id         String   @id @default(uuid())
+  propertyId String
+  customerId String
+  bookingId  String   @unique
+
+  rating     Int      // 1-5
+  comment    String?
+  
+  // Host response
+  hostResponse String?
+  respondedAt  DateTime?
+
+  createdAt  DateTime @default(now())
+
+  property   Property @relation(fields: [propertyId], references: [id])
+  customer   User     @relation(fields: [customerId], references: [id])
+  booking    Booking  @relation(fields: [bookingId], references: [id])
+
+  @@index([propertyId])
+  @@index([customerId])
+}
+
+// ==========================
+// BLOCKED DATES (Host management)
+// ==========================
+
+model BlockedDate {
+  id         String   @id @default(uuid())
+  propertyId String
+  startDate  DateTime
+  endDate    DateTime
+  reason     String?  // maintenance, personal use, etc.
+
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+  @@index([startDate, endDate])
+}
+
+// ==========================
+// AUDIT LOG (Admin & compliance)
+// ==========================
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String
+  action     String   // PROPERTY_APPROVED, USER_BLOCKED, etc.
+  entityType String   // Property, User, Booking
+  entityId   String
+  metadata   String?  @db.Text // JSON string
+  ipAddress  String?
+
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

@@ -1,1 +1,424 @@
 @import "tailwindcss";
+
+@layer base {
+  @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+}
+
+:root {
+  /* CORE COLORS */
+  --red: #d32f2f;
+  --red-dark: #b71c1c;
+  --red-glow: rgba(211, 47, 47, 0.22);
+
+  --green: #2e7d32;
+  --green-dark: #1b5e20;
+
+  --blue-price: #0a58ff;
+
+  /* GOLD – TEXTURE ONLY */
+  --gold-soft: rgba(212, 175, 55, 0.10);
+
+  /* TEXT */
+  --text-dark: #1f1f1f;
+  --text-muted: #6b6b6b;
+
+  --border-light: #ededed;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+/* ======================================================
+   PAGE BACKGROUND – PREMIUM
+   WHITE • RED (PRIMARY) • GOLD (SUBTLE TEXTURE)
+   ====================================================== */
+body {
+  background:
+    radial-gradient(
+      circle at 18% 14%,
+      rgba(211, 47, 47, 0.14),
+      transparent 48%
+    ),
+    radial-gradient(
+      circle at 50% 88%,
+      rgba(211, 47, 47, 0.10),
+      transparent 55%
+    ),
+    radial-gradient(
+      circle at 82% 18%,
+      rgba(212, 175, 55, 0.10),
+      transparent 52%
+    ),
+    #ffffff;
+
+  color: var(--text-dark);
+  min-height: 100vh;
+}
+
+/* ================= PREMIUM CARD STYLING ================= */
+.card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid var(--border-light);
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.06),
+    0 0 0 1.5px var(--red-glow);
+  margin-bottom: 24px;
+}
+
+.card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  color: var(--text-dark);
+}
+
+.card p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #444;
+}
+
+/* ================= PREMIUM BUTTONS ================= */
+.btn-primary {
+  background-color: var(--red);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+  box-shadow: 0 8px 18px rgba(211, 47, 47, 0.35);
+}
+
+.btn-primary:hover {
+  background-color: var(--red-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(211, 47, 47, 0.45);
+}
+
+.btn-success {
+  background-color: var(--green);
+  color: #ffffff;
+  border: none;
+  border-radius: 14px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.2s ease;
+  box-shadow: 0 8px 18px rgba(46, 125, 50, 0.35);
+}
+
+.btn-success:hover {
+  background-color: var(--green-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(46, 125, 50, 0.45);
+}
+
+/* ================= FORM INPUTS ================= */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  font-family: "Inter", sans-serif;
+  transition: border-color 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+}
+
+/* ================= PRICING TEXT ================= */
+.price-text {
+  color: var(--blue-price);
+  font-weight: 800;
+}
+
+/* ================= STATUS BADGES ================= */
+.badge {
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-block;
+}
+
+.badge-active {
+  background: #e8f5e9;
+  color: var(--green);
+}
+
+.badge-inactive {
+  background: #fff5f5;
+  color: var(--red);
+}
+
+.badge-pending {
+  background: #fff8e1;
+  color: #f57c00;
+}
+
+/* ================= HOVER EFFECTS ================= */
+.hover-red:hover {
+  color: var(--red) !important;
+}
+
+.hover-bg-red-light:hover {
+  background-color: rgba(211, 47, 47, 0.05) !important;
+}
+
+.hover-bg-red:hover {
+  background-color: rgba(211, 47, 47, 0.1) !important;
+}
+
+.hover-bg-white-light:hover {
+  background-color: #f5f5f5 !important;
+}
+
+.hover-bg-white-lighter:hover {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+.hover-border-red:hover {
+  border-color: var(--red) !important;
+}
+
+/* ================= NAVIGATION STYLES ================= */
+.nav-container {
+  background-color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.nav-logo-icon {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.nav-logo-icon:hover {
+  transform: scale(1.05);
+}
+
+.nav-logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--red);
+}
+
+.nav-desktop {
+  display: none;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .nav-desktop {
+    display: flex;
+  }
+}
+
+.nav-btn {
+  padding: 0.6rem 1.25rem;
+  border: 2px solid transparent;
+  border-radius: 25px;
+  background-color: #f8f9fa;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  text-decoration: none;
+}
+
+.nav-btn:hover {
+  background-color: var(--red);
+  color: #ffffff;
+  border-color: var(--red);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(211, 47, 47, 0.2);
+}
+
+.nav-account-btn {
+  position: relative;
+  padding-right: 2.5rem;
+}
+
+.nav-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+  min-width: 220px;
+  z-index: 1001;
+  overflow: hidden;
+  animation: dropdownFade 0.3s ease;
+}
+
+@keyframes dropdownFade {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 0.8rem 1.2rem;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.dropdown-item:hover {
+  background-color: #f8f9fa;
+  color: var(--red);
+  padding-left: 1.5rem;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 0.3rem 0;
+}
+
+.mobile-menu {
+  display: block;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-light);
+  animation: slideDown 0.3s ease;
+}
+
+@media (min-width: 768px) {
+  .mobile-menu {
+    display: none;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu-item {
+  display: block;
+  padding: 0.8rem 1.2rem;
+  color: #333;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  border-radius: 8px;
+  margin: 0.25rem 0.5rem;
+}
+
+.mobile-menu-item:hover {
+  background-color: #f8f9fa;
+  color: var(--red);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .nav-content {
+    padding: 1rem;
+  }
+  
+  .nav-logo-text {
+    font-size: 1rem;
+  }
+
+  .dropdown-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 15px 15px 0 0;
+    margin-top: 0;
+    animation: slideUp 0.3s ease;
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+}
