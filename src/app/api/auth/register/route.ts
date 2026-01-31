@@ -2,8 +2,16 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
 import { registerSchema } from "@/lib/auth/validators";
+import { checkRateLimit, RateLimits, getClientIp, rateLimitResponse } from "@/lib/security/rate-limit";
 
 export async function POST(req: Request) {
+  // Rate limiting
+  const clientIp = getClientIp(req);
+  const rateCheck = checkRateLimit(`register:${clientIp}`, RateLimits.AUTH);
+  
+  if (rateCheck.limited) {
+    return rateLimitResponse(rateCheck.resetIn);
+  }
   try {
     const body = await req.json();
     const parsed = registerSchema.safeParse(body);

@@ -78,7 +78,7 @@ function PropertyCard({
     id: string;
     title: string;
     status: string;
-    basePrice: any;
+    basePrice: number | { toNumber: () => number } | string;
     location: string;
     baseGuests: number;
     maxGuests: number;

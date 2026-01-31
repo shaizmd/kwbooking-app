@@ -23,8 +23,9 @@ export default function LoginPage() {
       await login({ email, password });
       router.push("/");
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Login failed");
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -97,7 +98,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <span style={{ color: 'var(--text-muted)' }}>Don't have an account? </span>
+            <span style={{ color: 'var(--text-muted)' }}>Don&apos;t have an account? </span>
             <Link href="/register" className="font-semibold" style={{ color: 'var(--red)' }}>
               Sign up
             </Link>

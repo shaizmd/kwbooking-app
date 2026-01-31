@@ -5,8 +5,16 @@ import { loginSchema } from "@/lib/auth/validators";
 import { signAccessToken, signRefreshToken } from "@/lib/auth/jwt";
 import { setAuthCookies } from "@/lib/auth/cookies";
 import { createSession } from "@/lib/auth/session";
+import { checkRateLimit, RateLimits, getClientIp, rateLimitResponse } from "@/lib/security/rate-limit";
 
 export async function POST(req: Request) {
+  // Rate limiting
+  const clientIp = getClientIp(req);
+  const rateCheck = checkRateLimit(`login:${clientIp}`, RateLimits.AUTH);
+  
+  if (rateCheck.limited) {
+    return rateLimitResponse(rateCheck.resetIn);
+  }
   try {
     const body = await req.json();
     const parsed = loginSchema.safeParse(body);

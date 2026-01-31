@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/db";
 import { notFound, redirect } from "next/navigation";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import { createBooking } from "./actions";
 import { cookies } from "next/headers";
@@ -59,6 +59,7 @@ export default async function BookingPage({
       checkIn: formData.get("checkIn") as string,
       checkOut: formData.get("checkOut") as string,
       guests: Number(formData.get("guests")),
+      locale,
     });
   }
 
@@ -293,7 +294,7 @@ export default async function BookingPage({
                     24/7 support
                   </p>
                   <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    We're here to help
+                    We&apos;re here to help
                   </p>
                 </div>
               </div>

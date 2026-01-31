@@ -38,3 +38,14 @@ export function verifyAccessToken(token: string): JWTPayload {
 export function verifyRefreshToken(token: string): JWTPayload {
   return jwt.verify(token, REFRESH_SECRET) as JWTPayload;
 }
+
+/**
+ * Verify any token (defaults to access token)
+ */
+export function verifyToken(token: string): JWTPayload | null {
+  try {
+    return verifyAccessToken(token);
+  } catch {
+    return null;
+  }
+}

@@ -73,8 +73,9 @@ export function ImageUploadForm({ propertyId }: { propertyId: string }) {
       e.currentTarget.reset();
       setPreview(null);
       router.refresh();
-    } catch (err: any) {
-      setError(err.message || "Failed to upload image");
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message || "Failed to upload image");
     } finally {
       setUploading(false);
     }

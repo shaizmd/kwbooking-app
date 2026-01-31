@@ -15,7 +15,7 @@ export async function requireAuth() {
 
   try {
     return verifyAccessToken(token);
-  } catch (error) {
+  } catch {
     throw new Error("Invalid token");
   }
 }

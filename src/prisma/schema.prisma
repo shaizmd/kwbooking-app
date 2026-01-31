@@ -96,6 +96,7 @@ model Session {
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([expiresAt]) // For session cleanup cron job
 }
 
 // ==========================
@@ -195,6 +196,7 @@ model Booking {
   @@index([customerId])
   @@index([status])
   @@index([checkIn, checkOut]) // For availability queries
+  @@index([createdAt]) // For auto-cancel cron job
 }
 
 // ==========================
@@ -234,6 +236,9 @@ model Invoice {
   issuedAt      DateTime @default(now())
 
   booking       Booking  @relation(fields: [bookingId], references: [id])
+
+  @@index([bookingId])
+  @@index([issuedAt])
 }
 
 // ==========================
@@ -264,7 +269,7 @@ model Subscription {
 
   @@index([hostId])
   @@index([status])
-  @@index([endsAt]) // For expiry cron jobs
+  @@index([endsAt]) // For subscription expiry cron job
 }
 
 // ==========================
@@ -357,4 +362,21 @@ model AuditLog {
   @@index([userId])
   @@index([entityType, entityId])
   @@index([createdAt])
+}
+
+// ==========================
+// PLATFORM SETTINGS (Kill-switches)
+// ==========================
+
+model PlatformSettings {
+  id                   String   @id @default("default")
+  
+  // Kill-switches
+  bookingsEnabled      Boolean  @default(true)
+  paymentsEnabled      Boolean  @default(true)
+  newPropertiesEnabled Boolean  @default(true)
+  
+  // Metadata
+  updatedAt            DateTime @updatedAt
+  updatedBy            String?
 }

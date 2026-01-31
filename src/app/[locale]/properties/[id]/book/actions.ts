@@ -10,11 +10,13 @@ export async function createBooking({
   checkIn,
   checkOut,
   guests,
+  locale,
 }: {
   propertyId: string;
   checkIn: string;
   checkOut: string;
   guests: number;
+  locale: string;
 }) {
   const user = await requireRole("CUSTOMER");
 
@@ -87,5 +89,36 @@ export async function createBooking({
     });
   });
 
-  redirect(`/bookings`);
+  redirect(`/${locale}/bookings/${booking.id}/pay`);
+}
+
+export async function getBookingForPayment(bookingId: string) {
+  const user = await requireRole("CUSTOMER");
+
+  const booking = await prisma.booking.findFirst({
+    where: {
+      id: bookingId,
+      customerId: user.sub,
+      status: "PENDING",
+    },
+    include: {
+      property: {
+        select: {
+          title: true,
+          location: true,
+          pricePerNight: true,
+          images: {
+            orderBy: { order: "asc" },
+            take: 1,
+          },
+        },
+      },
+    },
+  });
+
+  if (!booking) {
+    throw new Error("Booking not found or already processed");
+  }
+
+  return booking;
 }

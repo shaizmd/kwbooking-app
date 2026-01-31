@@ -38,8 +38,9 @@ export default function NewPropertyPage() {
 
       const data = await response.json();
       router.push(`/host/properties/${data.id}`);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
       setLoading(false);
     }
   }

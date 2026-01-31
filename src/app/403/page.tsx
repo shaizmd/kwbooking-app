@@ -13,7 +13,7 @@ export default function ForbiddenPage() {
           403 – Access Denied
         </h1>
         <p className="text-gray-600 mb-8 max-w-md">
-          You don't have permission to access this page. Please contact support if you believe this is an error.
+          You don&apos;t have permission to access this page. Please contact support if you believe this is an error.
         </p>
         <Link href="/" className="btn-primary inline-block">
           Go Back Home

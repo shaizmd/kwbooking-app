@@ -63,10 +63,11 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedProperty);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as Error;
     console.error("Error updating property:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: err.message || "Internal server error" },
       { status: 500 }
     );
   }

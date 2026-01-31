@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export function Footer() {
   return (
     <footer className="text-gray-300 border-t mt-auto" style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}>
@@ -26,24 +28,24 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/about" className="transition hover-red">
+                <Link href="/about" className="transition hover-red">
                   About Us
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/host" className="transition hover-red">
+                <Link href="/host" className="transition hover-red">
                   Become a Host
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/help" className="transition hover-red">
+                <Link href="/help" className="transition hover-red">
                   Help Center
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/contact" className="transition hover-red">
+                <Link href="/contact" className="transition hover-red">
                   Contact Us
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -53,19 +55,19 @@ export function Footer() {
             <h3 className="font-semibold text-white mb-4">Legal</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/terms" className="transition hover-red">
+                <Link href="/terms" className="transition hover-red">
                   Terms of Service
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/privacy" className="transition hover-red">
+                <Link href="/privacy" className="transition hover-red">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="/cookies" className="transition hover-red">
+                <Link href="/cookies" className="transition hover-red">
                   Cookie Policy
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

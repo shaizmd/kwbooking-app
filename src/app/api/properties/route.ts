@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(property, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating property:", error);
     return NextResponse.json(
       { error: error.message || "Internal server error" },
