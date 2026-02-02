@@ -7,8 +7,25 @@
 
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../lib/auth/password";
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import { PrismaNeon } from '@prisma/adapter-neon';
+import ws from 'ws';
+import { config } from "dotenv";
+import path from "path";
 
-const prisma = new PrismaClient();
+// Load .env.local explicitly
+config({ path: path.join(process.cwd(), '.env.local') });
+
+neonConfig.webSocketConstructor = ws;
+
+const connectionString = process.env.DATABASE_URL!;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not defined in .env.local");
+}
+
+const adapter = new PrismaNeon({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("🌱 Starting database seed...");
@@ -21,6 +38,7 @@ async function main() {
   await prisma.booking.deleteMany();
   await prisma.propertyImage.deleteMany();
   await prisma.propertyAmenity.deleteMany();
+  await prisma.amenity.deleteMany();
   await prisma.review.deleteMany();
   await prisma.blockedDate.deleteMany();
   await prisma.property.deleteMany();
@@ -134,19 +152,30 @@ async function main() {
   const property1 = await prisma.property.create({
     data: {
       hostId: host1.id,
+      propertyType: "VILLA",
       title: "Luxury Beach Villa in Salmiya",
       titleAr: "فيلا شاطئية فاخرة في السالمية",
-      description: "Stunning 4-bedroom beachfront villa with private pool, modern amenities, and breathtaking sea views. Perfect for families and groups.",
+      description: "Stunning 4-bedroom beachfront villa with private pool, modern amenities, and breathtaking sea views. Perfect for families and groups. Features spacious living areas, fully equipped kitchen, and direct beach access.",
       descriptionAr: "فيلا رائعة من 4 غرف نوم على الشاطئ مع مسبح خاص ووسائل راحة حديثة وإطلالات خلابة على البحر",
       location: "Salmiya, Kuwait",
       locationAr: "السالمية، الكويت",
       latitude: 29.3459,
       longitude: 48.0759,
-      basePrice: 150.5, // KWD
+      basePrice: 150.5,
       currency: "KWD",
       baseGuests: 4,
       maxGuests: 8,
       extraGuestPrice: 20.0,
+      bedrooms: 4,
+      bathrooms: 3,
+      beds: 5,
+      areaSize: 350,
+      checkInTime: "15:00",
+      checkOutTime: "11:00",
+      averageRating: 4.8,
+      reviewCount: 47,
+      featured: true,
+      instantBooking: true,
       status: "ACTIVE",
       slug: "luxury-beach-villa-salmiya",
     },
@@ -155,9 +184,10 @@ async function main() {
   const property2 = await prisma.property.create({
     data: {
       hostId: host1.id,
+      propertyType: "APARTMENT",
       title: "Modern Apartment in Kuwait City",
       titleAr: "شقة حديثة في مدينة الكويت",
-      description: "2-bedroom furnished apartment in the heart of Kuwait City. Walking distance to shopping malls and restaurants.",
+      description: "2-bedroom furnished apartment in the heart of Kuwait City. Walking distance to shopping malls and restaurants. Features modern decor, high-speed WiFi, and a fully equipped kitchen.",
       descriptionAr: "شقة مفروشة من غرفتي نوم في قلب مدينة الكويت",
       location: "Kuwait City, Kuwait",
       locationAr: "مدينة الكويت، الكويت",
@@ -168,6 +198,17 @@ async function main() {
       baseGuests: 2,
       maxGuests: 4,
       extraGuestPrice: 15.0,
+      bedrooms: 2,
+      bathrooms: 2,
+      beds: 2,
+      areaSize: 120,
+      floor: 8,
+      checkInTime: "14:00",
+      checkOutTime: "11:00",
+      averageRating: 4.5,
+      reviewCount: 32,
+      featured: false,
+      instantBooking: true,
       status: "ACTIVE",
       slug: "modern-apartment-kuwait-city",
     },
@@ -176,9 +217,10 @@ async function main() {
   const property3 = await prisma.property.create({
     data: {
       hostId: host2.id,
+      propertyType: "STUDIO",
       title: "Cozy Studio in Hawalli",
       titleAr: "استوديو مريح في حولي",
-      description: "Affordable studio apartment, perfect for solo travelers or couples. Close to public transport.",
+      description: "Affordable studio apartment, perfect for solo travelers or couples. Close to public transport. Compact yet comfortable with all essential amenities.",
       descriptionAr: "شقة استوديو بأسعار معقولة، مثالية للمسافرين المنفردين أو الأزواج",
       location: "Hawalli, Kuwait",
       locationAr: "حولي، الكويت",
@@ -188,7 +230,18 @@ async function main() {
       currency: "KWD",
       baseGuests: 2,
       maxGuests: 2,
-      status: "PENDING_APPROVAL", // Awaiting admin approval
+      bedrooms: 1,
+      bathrooms: 1,
+      beds: 1,
+      areaSize: 45,
+      floor: 3,
+      checkInTime: "14:00",
+      checkOutTime: "11:00",
+      averageRating: 4.2,
+      reviewCount: 18,
+      featured: false,
+      instantBooking: false,
+      status: "PENDING_APPROVAL",
       slug: "cozy-studio-hawalli",
     },
   });
@@ -196,18 +249,29 @@ async function main() {
   const _property4 = await prisma.property.create({
     data: {
       hostId: host1.id,
+      propertyType: "VILLA",
       title: "Family Villa with Garden",
-      description: "Spacious 5-bedroom villa with large garden and barbecue area.",
+      description: "Spacious 5-bedroom villa with large garden and barbecue area. Ideal for large families or group gatherings.",
       location: "Fintas, Kuwait",
       latitude: 29.1739,
       longitude: 48.1249,
       basePrice: 200.0,
       currency: "KWD",
       baseGuests: 6,
-      maxGuests: 10,
-      extraGuestPrice: 25.0,
-      status: "DRAFT", // Not published yet
-      slug: "family-villa-garden-fintas",
+      maxGuests: 12,
+      extraGuestPrice: 18.0,
+      bedrooms: 5,
+      bathrooms: 4,
+      beds: 7,
+      areaSize: 450,
+      checkInTime: "14:00",
+      checkOutTime: "11:00",
+      averageRating: 4.6,
+      reviewCount: 25,
+      featured: true,
+      instantBooking: false,
+      status: "ACTIVE",
+      slug: "family-villa-fintas",
     },
   });
 

@@ -7,6 +7,7 @@ import { getCurrentUser, logout } from "@/lib/auth/client";
 import type { User } from "@/lib/auth/client";
 import LanguageToggle from "./LanguageToggle";
 import { useTranslations } from "next-intl";
+import { motion, AnimatePresence } from "framer-motion";
 
 export function Navigation() {
   const t = useTranslations("nav");
@@ -107,7 +108,13 @@ export function Navigation() {
                 </button>
 
                 {showAccountDropdown && (
-                  <div className="dropdown-menu">
+                  <motion.div
+                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="dropdown-menu"
+                  >
                     {user ? (
                       <>
                         {user.role === "HOST" && (
@@ -181,7 +188,7 @@ export function Navigation() {
                         </Link>
                       </>
                     )}
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </>
@@ -205,12 +212,24 @@ export function Navigation() {
       </div>
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div className="mobile-menu">
-          {/* Language Toggle for Mobile */}
-          <div className="px-4 py-3 border-b border-gray-200">
-            <LanguageToggle />
-          </div>
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+            className="mobile-menu"
+          >
+            {/* Language Toggle for Mobile */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="px-4 py-3 border-b border-gray-200"
+            >
+              <LanguageToggle />
+            </motion.div>
 
           {user?.role === "HOST" && (
             <Link
@@ -292,8 +311,9 @@ export function Navigation() {
               </Link>
             </>
           )}
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }

@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "./jwt";
 
@@ -11,7 +10,7 @@ export interface AuthUser {
  * Verify authentication from API route requests
  * Returns user if authenticated, null otherwise
  */
-export async function verifyAuth(_request: NextRequest): Promise<AuthUser | null> {
+export async function verifyAuth(): Promise<AuthUser | null> {
   try {
     // Get token from cookies
     const cookieStore = await cookies();

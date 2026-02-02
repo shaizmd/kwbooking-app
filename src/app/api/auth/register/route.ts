@@ -3,6 +3,9 @@ import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/auth/password";
 import { registerSchema } from "@/lib/auth/validators";
 import { checkRateLimit, RateLimits, getClientIp, rateLimitResponse } from "@/lib/security/rate-limit";
+import { signAccessToken, signRefreshToken } from "@/lib/auth/jwt";
+import { setAuthCookies } from "@/lib/auth/cookies";
+import { createSession } from "@/lib/auth/session";
 
 export async function POST(req: Request) {
   // Rate limiting
@@ -57,8 +60,28 @@ export async function POST(req: Request) {
         email: true,
         role: true,
         fullName: true,
+        isKycApproved: true,
       },
     });
+
+    // Auto-login: Create JWT tokens and session
+    const payload = { sub: user.id, role: user.role };
+    const accessToken = signAccessToken(payload);
+    const refreshToken = signRefreshToken(payload);
+
+    // Extract IP and User-Agent for session tracking
+    const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+    const userAgent = req.headers.get("user-agent") || "unknown";
+
+    await createSession(
+      user.id,
+      refreshToken,
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      ipAddress,
+      userAgent
+    );
+
+    await setAuthCookies(accessToken, refreshToken);
 
     return NextResponse.json(
       { success: true, user },

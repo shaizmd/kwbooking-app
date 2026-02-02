@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { locales } from "@/config/locales";
 import { useState } from "react";
+import { motion } from "framer-motion";
 
 export default function LanguageToggle() {
   const router = useRouter();
@@ -35,23 +35,27 @@ export default function LanguageToggle() {
   return (
     <div className="language-toggle-container">
       <div className="language-toggle">
-        <button
+        <motion.button
+          whileHover={{ scale: currentLocale !== "en" ? 1.05 : 1 }}
+          whileTap={{ scale: 0.95 }}
           className={`language-btn ${currentLocale === "en" ? "active" : ""}`}
           onClick={() => handleToggle("en")}
           disabled={currentLocale === "en" || isAnimating}
           aria-label="Switch to English"
         >
           EN
-        </button>
+        </motion.button>
         <div className="language-divider"></div>
-        <button
+        <motion.button
+          whileHover={{ scale: currentLocale !== "ar" ? 1.05 : 1 }}
+          whileTap={{ scale: 0.95 }}
           className={`language-btn ${currentLocale === "ar" ? "active" : ""}`}
           onClick={() => handleToggle("ar")}
           disabled={currentLocale === "ar" || isAnimating}
           aria-label="Switch to Arabic"
         >
           AR
-        </button>
+        </motion.button>
       </div>
     </div>
   );

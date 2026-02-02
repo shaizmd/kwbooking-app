@@ -109,23 +109,47 @@ model Property {
 
   title            String
   titleAr          String?        // Arabic title for i18n
-  description      String
-  descriptionAr    String?        // Arabic description
+  description      String         @db.Text
+  descriptionAr    String?        @db.Text // Arabic description
+
+  // Property Type
+  propertyType     String         @default("APARTMENT") // APARTMENT, VILLA, HOTEL, RESORT, STUDIO, etc.
 
   location         String
   locationAr       String?        // Arabic location name
   latitude         Float?
   longitude        Float?
 
+  // Pricing
   basePrice        Decimal        // Store in smallest unit (fils for KWD)
   currency         String         @default("KWD") // ISO: KWD, USD, SAR
 
-  baseGuests       Int
-  maxGuests        Int
-  extraGuestPrice  Decimal?
+  // Capacity Management (Agoda/Booking.com style)
+  baseGuests       Int            // Base number of guests included in basePrice
+  maxGuests        Int            // Maximum capacity
+  extraGuestPrice  Decimal?       // Additional charge per extra guest
+
+  // Property Details
+  bedrooms         Int            @default(1)
+  bathrooms        Int            @default(1)
+  beds             Int            @default(1)
+  areaSize         Int?           // Square meters
+  floor            Int?           // Floor number for apartments
+
+  // Check-in/out times
+  checkInTime      String?        @default("14:00")
+  checkOutTime     String?        @default("11:00")
+
+  // Ratings & Reviews
+  averageRating    Float?         @default(0)
+  reviewCount      Int            @default(0)
 
   status           PropertyStatus @default(DRAFT)
   adminNotes       String?        // Rejection reason or notes
+
+  // Additional features
+  featured         Boolean        @default(false)
+  instantBooking   Boolean        @default(false)
 
   // SEO & discoverability
   slug             String?        @unique
@@ -144,6 +168,8 @@ model Property {
   @@index([hostId])
   @@index([status])
   @@index([slug])
+  @@index([propertyType])
+  @@index([averageRating])
 }
 
 // Property images (stored in R2 / S3)

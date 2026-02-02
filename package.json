@@ -20,7 +20,10 @@
     "@react-pdf/renderer": "^4.3.2",
     "@stripe/react-stripe-js": "^5.6.0",
     "@stripe/stripe-js": "^8.7.0",
+    "@types/ws": "^8.18.1",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "framer-motion": "^12.29.3",
     "jsonwebtoken": "^9.0.3",
     "next": "16.1.6",
     "next-intl": "^4.8.1",
@@ -28,6 +31,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "stripe": "^20.3.0",
+    "ws": "^8.19.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
@@ -37,6 +41,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",

@@ -11,7 +11,7 @@ export default async function PropertyDetailsPage({
 }) {
   const { locale, id } = await params;
   const t = await getTranslations("propertyDetails");
-  const tCommon = await getTranslations("common");
+
 
   const property = await prisma.property.findFirst({
     where: {
@@ -47,15 +47,43 @@ export default async function PropertyDetailsPage({
 
       {/* Property Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--text-dark)' }}>
-          {property.title}
-        </h1>
-        <div className="flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span className="text-lg">{property.location}</span>
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex-1">
+            <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--text-dark)' }}>
+              {property.title}
+            </h1>
+            {property.averageRating && property.averageRating > 0 && (
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-1 bg-yellow-50 px-3 py-1 rounded-lg">
+                  <span className="text-yellow-500">⭐</span>
+                  <span className="font-bold text-lg">{property.averageRating.toFixed(1)}</span>
+                </div>
+                <span className="text-gray-600">({property.reviewCount} {property.reviewCount === 1 ? 'review' : 'reviews'})</span>
+              </div>
+            )}
+          </div>
+          {property.featured && (
+            <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm font-bold">
+              Featured Property
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2" style={{ color: 'var(--text-muted)' }}>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span className="text-lg">{property.location}</span>
+          </div>
+          <span className="inline-block px-3 py-1 text-xs font-semibold rounded-lg" 
+            style={{ 
+              background: 'rgba(211, 47, 47, 0.1)', 
+              color: 'var(--red)' 
+            }}
+          >
+            {property.propertyType}
+          </span>
         </div>
       </div>
 
@@ -83,6 +111,94 @@ export default async function PropertyDetailsPage({
             <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
               {property.description}
             </p>
+          </div>
+
+          {/* Property Details */}
+          <div className="card">
+            <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-dark)' }}>
+              Property Details
+            </h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-100">
+                  <span className="text-2xl">🛏️</span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Bedrooms</p>
+                  <p className="text-lg font-semibold">{property.bedrooms}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-100">
+                  <span className="text-2xl">🚿</span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Bathrooms</p>
+                  <p className="text-lg font-semibold">{property.bathrooms}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-100">
+                  <span className="text-2xl">🛌</span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Beds</p>
+                  <p className="text-lg font-semibold">{property.beds}</p>
+                </div>
+              </div>
+
+              {property.areaSize && (
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-100">
+                    <span className="text-2xl">📐</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Area</p>
+                    <p className="text-lg font-semibold">{property.areaSize}m²</p>
+                  </div>
+                </div>
+              )}
+
+              {property.floor !== null && (
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-100">
+                    <span className="text-2xl">🏢</span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Floor</p>
+                    <p className="text-lg font-semibold">{property.floor}</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg flex items-center justify-center bg-gray-100">
+                  <span className="text-2xl">🏠</span>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Type</p>
+                  <p className="text-lg font-semibold">{property.propertyType}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Check-in/out Times */}
+            {property.checkInTime && property.checkOutTime && (
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Check-in</p>
+                    <p className="text-lg font-semibold">{property.checkInTime}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Check-out</p>
+                    <p className="text-lg font-semibold">{property.checkOutTime}</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Property Images Gallery */}

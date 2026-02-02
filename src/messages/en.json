@@ -61,8 +61,18 @@
       "support": {
         "title": "24/7 Customer Support",
         "description": "We're here to help whenever you need us"
-      }
-    }
+      }    },
+    "hostCta": {
+      "title": "Earn Extra Income with Your Property",
+      "subtitle": "Join our community of successful hosts",
+      "description": "List your property on BookStay and start earning. Verified guests, secure payments, and full support.",
+      "becomeHost": "Start Hosting Today",
+      "features": {
+        "verified": "Verified Guests",
+        "secure": "Secure Payments",
+        "support": "24/7 Support",
+        "freedom": "You're in Control"
+      }    }
   },
   "properties": {
     "title": "Available Properties",
@@ -164,6 +174,17 @@
     "404": {
       "title": "404 – Page Not Found",
       "message": "The page you're looking for doesn't exist. It may have been moved or deleted."
-    }
-  }
+    }  },
+  "footer": {
+    "tagline": "Your trusted platform for booking verified properties in Kuwait and the MENA region.",
+    "copyright": "BookStay. All rights reserved.",
+    "quickLinks": "Quick Links",
+    "aboutUs": "About Us",
+    "becomeHost": "Become a Host",
+    "helpCenter": "Help Center",
+    "contactUs": "Contact Us",
+    "legal": "Legal",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "cookies": "Cookie Policy"  }
 }

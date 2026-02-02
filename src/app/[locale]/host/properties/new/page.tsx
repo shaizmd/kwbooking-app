@@ -24,10 +24,18 @@ export default function NewPropertyPage() {
           title: formData.get("title"),
           description: formData.get("description"),
           location: formData.get("location"),
+          propertyType: formData.get("propertyType"),
           basePrice: Number(formData.get("basePrice")),
           baseGuests: Number(formData.get("baseGuests")),
           maxGuests: Number(formData.get("maxGuests")),
           extraGuestPrice: Number(formData.get("extraGuestPrice") || 0),
+          bedrooms: Number(formData.get("bedrooms")),
+          bathrooms: Number(formData.get("bathrooms")),
+          beds: Number(formData.get("beds")),
+          areaSize: formData.get("areaSize") ? Number(formData.get("areaSize")) : undefined,
+          floor: formData.get("floor") ? Number(formData.get("floor")) : undefined,
+          checkInTime: formData.get("checkInTime"),
+          checkOutTime: formData.get("checkOutTime"),
         }),
       });
 
@@ -91,6 +99,24 @@ export default function NewPropertyPage() {
             </div>
 
             <div>
+              <label htmlFor="propertyType" className="block text-sm font-medium text-gray-700 mb-1">
+                Property Type *
+              </label>
+              <select
+                id="propertyType"
+                name="propertyType"
+                required
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+              >
+                <option value="APARTMENT">Apartment</option>
+                <option value="VILLA">Villa</option>
+                <option value="STUDIO">Studio</option>
+                <option value="HOTEL">Hotel Room</option>
+                <option value="RESORT">Resort</option>
+              </select>
+            </div>
+
+            <div>
               <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description *
               </label>
@@ -122,6 +148,88 @@ export default function NewPropertyPage() {
               placeholder="e.g., Salmiya, Kuwait City"
             />
             <p className="text-sm text-gray-600 mt-1">Enter city and area information</p>
+          </div>
+        </div>
+
+        {/* Property Details */}
+        <div className="pt-6 border-t border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Property Details</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="bedrooms" className="block text-sm font-medium text-gray-700 mb-1">
+                Bedrooms *
+              </label>
+              <input
+                type="number"
+                id="bedrooms"
+                name="bedrooms"
+                required
+                min="1"
+                defaultValue="1"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="bathrooms" className="block text-sm font-medium text-gray-700 mb-1">
+                Bathrooms *
+              </label>
+              <input
+                type="number"
+                id="bathrooms"
+                name="bathrooms"
+                required
+                min="1"
+                defaultValue="1"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="beds" className="block text-sm font-medium text-gray-700 mb-1">
+                Beds *
+              </label>
+              <input
+                type="number"
+                id="beds"
+                name="beds"
+                required
+                min="1"
+                defaultValue="1"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label htmlFor="areaSize" className="block text-sm font-medium text-gray-700 mb-1">
+                Area Size (m²)
+              </label>
+              <input
+                type="number"
+                id="areaSize"
+                name="areaSize"
+                min="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                placeholder="Optional"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="floor" className="block text-sm font-medium text-gray-700 mb-1">
+                Floor Number
+              </label>
+              <input
+                type="number"
+                id="floor"
+                name="floor"
+                min="0"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                placeholder="Optional"
+              />
+              <p className="text-xs text-gray-600 mt-1">For apartments</p>
+            </div>
           </div>
         </div>
 
@@ -199,6 +307,34 @@ export default function NewPropertyPage() {
                 placeholder="0.000"
               />
               <p className="text-xs text-gray-600 mt-1">Per additional guest</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <div>
+              <label htmlFor="checkInTime" className="block text-sm font-medium text-gray-700 mb-1">
+                Check-in Time
+              </label>
+              <input
+                type="time"
+                id="checkInTime"
+                name="checkInTime"
+                defaultValue="14:00"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="checkOutTime" className="block text-sm font-medium text-gray-700 mb-1">
+                Check-out Time
+              </label>
+              <input
+                type="time"
+                id="checkOutTime"
+                name="checkOutTime"
+                defaultValue="11:00"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+              />
             </div>
           </div>
         </div>

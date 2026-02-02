@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { HeroSection, FeatureCard } from "@/components/animations/HomeAnimations";
+import { HostCTA } from "@/components/HostCTA";
 
 export default async function HomePage({
   params,
@@ -8,15 +10,24 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   const t = await getTranslations("home");
-  const tCommon = await getTranslations("common");
   return (
     <main className="min-h-screen">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-gray-50 to-white">
+        {/* Animated Flowing Lines */}
+        <div className="flowing-lines">
+          <div className="flowing-line"></div>
+          <div className="flowing-line"></div>
+          <div className="flowing-line"></div>
+          <div className="flowing-line"></div>
+          <div className="flowing-line"></div>
+          <div className="flowing-line"></div>
+          <div className="flowing-line"></div>
+        </div>
+
         {/* Glass morphism overlay with red tint */}
         <div className="absolute inset-0" style={{
-          background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.08) 0%, rgba(183, 28, 28, 0.12) 100%)',
-          backdropFilter: 'blur(100px)'
+          background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.04) 0%, rgba(183, 28, 28, 0.06) 100%)',
         }}></div>
 
         {/* Animated background elements */}
@@ -26,6 +37,7 @@ export default async function HomePage({
           <div className="absolute top-1/2 right-1/4 w-64 h-64 rounded-full opacity-10" style={{ background: 'radial-gradient(circle, rgba(211, 47, 47, 0.2), transparent)' }}></div>
         </div>
 
+        <HeroSection>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}
@@ -42,15 +54,16 @@ export default async function HomePage({
 
             {/* Main Headline */}
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight" style={{ 
-              fontFamily: 'Inter, sans-serif',
+              fontFamily: 'Geometria, system-ui, sans-serif',
               letterSpacing: '-0.02em',
-              color: '#222222'
+              color: '#010000',
+              fontWeight: 800
             }}>
               {t("hero.title")}
             </h1>
 
             {/* Subtext */}
-            <p className="text-lg sm:text-xl lg:text-2xl mb-10 max-w-2xl mx-auto leading-relaxed" style={{ color: '#222222' }}>
+            <p className="subtext text-lg sm:text-xl lg:text-2xl mb-10 max-w-2xl mx-auto leading-relaxed">
               {t("hero.subtitle")}
             </p>
 
@@ -91,21 +104,21 @@ export default async function HomePage({
             </div>
 
             {/* Trust indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 text-sm" style={{ color: '#222222' }}>
+            <div className="subtext flex flex-wrap justify-center items-center gap-8">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" style={{ color: 'var(--green)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" style={{ color: 'var(--green)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                 </svg>
                 <span>{t("trust.verified")}</span>
               </div>
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" style={{ color: 'var(--green)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" style={{ color: 'var(--green)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
                 <span>{t("trust.transparent")}</span>
               </div>
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" style={{ color: 'var(--red)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4" style={{ color: 'var(--red)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
                 <span>{t("trust.support")}</span>
@@ -113,6 +126,7 @@ export default async function HomePage({
             </div>
           </div>
         </div>
+        </HeroSection>
       </section>
 
       {/* Features Section */}
@@ -122,12 +136,13 @@ export default async function HomePage({
             <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: 'var(--text-dark)' }}>
               {t("features.title")}
             </h2>
-            <p className="text-xl max-w-2xl mx-auto" style={{ color: 'var(--text-muted)' }}>
+            <p className="subtext max-w-2xl mx-auto">
               {t("features.subtitle")}
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard index={0}>
             <div className="card text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'rgba(211, 47, 47, 0.1)' }}>
                 <svg className="w-8 h-8" style={{ color: 'var(--red)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,11 +150,13 @@ export default async function HomePage({
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-dark)' }}>{t("features.verified.title")}</h3>
-              <p style={{ color: 'var(--text-muted)' }}>
+              <p className="subtext">
                 {t("features.verified.description")}
               </p>
             </div>
+            </FeatureCard>
 
+            <FeatureCard index={1}>
             <div className="card text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'rgba(46, 125, 50, 0.1)' }}>
                 <svg className="w-8 h-8" style={{ color: 'var(--green)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,11 +164,13 @@ export default async function HomePage({
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-dark)' }}>{t("features.pricing.title")}</h3>
-              <p style={{ color: 'var(--text-muted)' }}>
+              <p className="subtext">
                 {t("features.pricing.description")}
               </p>
             </div>
+            </FeatureCard>
 
+            <FeatureCard index={2}>
             <div className="card text-center">
               <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'rgba(10, 88, 255, 0.1)' }}>
                 <svg className="w-8 h-8" style={{ color: 'var(--blue-price)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -159,33 +178,17 @@ export default async function HomePage({
                 </svg>
               </div>
               <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-dark)' }}>{t("features.support.title")}</h3>
-              <p style={{ color: 'var(--text-muted)' }}>
+              <p className="subtext">
                 {t("features.support.description")}
               </p>
             </div>
+            </FeatureCard>
           </div>
         </div>
       </section>
 
-      {/* Host CTA Section */}
-      <section className="py-20 text-white relative overflow-hidden" style={{ backgroundColor: '#1a1a1a' }}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-6">
-            List Your Property on BookStay
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto" style={{ color: '#d0d0d0' }}>
-            Join hundreds of hosts earning extra income by listing their properties.
-            Get started in minutes.
-          </p>
-          <Link
-            href="/register"
-            className="btn-success inline-block"
-            style={{ height: '54px', lineHeight: '54px', paddingLeft: '32px', paddingRight: '32px' }}
-          >
-            Become a Host
-          </Link>
-        </div>
-      </section>
+      {/* Host CTA Section - Redesigned */}
+      <HostCTA locale={locale} />
     </main>
   );
 }

@@ -61,6 +61,10 @@ export default async function EditPropertyPage({
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Property Information</h2>
             <div className="space-y-4">
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                <p className="text-gray-900">{property.propertyType}</p>
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                 <p className="text-gray-900">{property.title}</p>
               </div>
@@ -72,6 +76,29 @@ export default async function EditPropertyPage({
                 <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                 <p className="text-gray-900">{property.location}</p>
               </div>
+              
+              {/* Property Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-gray-200">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary-DEFAULT">{property.bedrooms}</div>
+                  <div className="text-sm text-gray-600">Bedrooms</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary-DEFAULT">{property.bathrooms}</div>
+                  <div className="text-sm text-gray-600">Bathrooms</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary-DEFAULT">{property.beds}</div>
+                  <div className="text-sm text-gray-600">Beds</div>
+                </div>
+                {property.areaSize && (
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary-DEFAULT">{property.areaSize}</div>
+                    <div className="text-sm text-gray-600">m²</div>
+                  </div>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Base Price</label>
@@ -91,6 +118,42 @@ export default async function EditPropertyPage({
                   <label className="block text-sm font-medium text-gray-700 mb-1">Max Guests</label>
                   <p className="text-gray-900">{property.maxGuests}</p>
                 </div>
+              </div>
+
+              {/* Check-in/out Times */}
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Check-in Time</label>
+                  <p className="text-gray-900">{property.checkInTime}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Check-out Time</label>
+                  <p className="text-gray-900">{property.checkOutTime}</p>
+                </div>
+              </div>
+
+              {/* Rating & Features */}
+              {property.averageRating > 0 && (
+                <div className="pt-4 border-t border-gray-200">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">⭐</span>
+                    <span className="text-xl font-bold text-gray-900">{property.averageRating.toFixed(1)}</span>
+                    <span className="text-gray-600">({property.reviewCount} reviews)</span>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-2 flex-wrap pt-4 border-t border-gray-200">
+                {property.featured && (
+                  <span className="px-3 py-1 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-full text-xs font-semibold">
+                    ⭐ Featured
+                  </span>
+                )}
+                {property.instantBooking && (
+                  <span className="px-3 py-1 bg-green-50 text-green-700 border border-green-200 rounded-full text-xs font-semibold">
+                    ⚡ Instant Booking
+                  </span>
+                )}
               </div>
             </div>
           </div>

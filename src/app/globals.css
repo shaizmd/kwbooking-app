@@ -2,27 +2,28 @@
 
 @layer base {
   @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+  @import url("https://fonts.cdnfonts.com/css/geometria");
 }
 
-/* Circular Book Font */
+/* Geometria Font Fallback */
 @font-face {
-  font-family: 'Circular Book';
+  font-family: 'Geometria';
   src: local('Helvetica Neue'), local('Helvetica'), local('Arial');
   font-weight: 400;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Circular Book';
+  font-family: 'Geometria';
   src: local('Helvetica Neue Medium'), local('Helvetica Medium'), local('Arial');
   font-weight: 500;
   font-style: normal;
 }
 
 @font-face {
-  font-family: 'Circular Book';
+  font-family: 'Geometria';
   src: local('Helvetica Neue Bold'), local('Helvetica Bold'), local('Arial Bold');
-  font-weight: 700;
+  font-weight: 600;
   font-style: normal;
 }
 
@@ -32,7 +33,7 @@
   --red-dark: #b71c1c;
   --red-glow: rgba(211, 47, 47, 0.22);
 
-  --green: #2e7d32;
+  --green: #1fc87d;
   --green-dark: #1b5e20;
 
   --blue-price: #0a58ff;
@@ -41,7 +42,7 @@
   --gold-soft: rgba(212, 175, 55, 0.10);
 
   /* TEXT */
-  --text-dark: #1f1f1f;
+  --text-dark: #010000;
   --text-muted: #6b6b6b;
 
   --border-light: #ededed;
@@ -49,7 +50,12 @@
 
 * {
   box-sizing: border-box;
-  font-family: 'Circular Book', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: 'Geometria', system-ui, sans-serif;
+  font-weight: 600;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 /* ======================================================
@@ -79,6 +85,19 @@ body {
   min-height: 100vh;
 }
 
+/* ================= TYPOGRAPHY UTILITIES ================= */
+.subtext,
+.text-subtext,
+p.text-muted,
+.description-text,
+.subtitle-text {
+  color: rgb(107, 114, 128);
+  font-weight: 500;
+  font-size: 16px;
+  line-height: 24px;
+  font-style: normal;
+}
+
 /* ================= PREMIUM CARD STYLING ================= */
 .card {
   background: #ffffff;
@@ -89,6 +108,14 @@ body {
     0 10px 26px rgba(0, 0, 0, 0.06),
     0 0 0 1.5px var(--red-glow);
   margin-bottom: 24px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 15px 35px rgba(0, 0, 0, 0.1),
+    0 0 0 2px var(--red-glow);
 }
 
 .card h3 {
@@ -117,12 +144,18 @@ body {
   cursor: pointer;
   transition: background 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
   box-shadow: 0 8px 18px rgba(211, 47, 47, 0.35);
+  animation: buttonFloat 3s ease-in-out infinite;
 }
 
 .btn-primary:hover {
   background-color: var(--red-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(211, 47, 47, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(211, 47, 47, 0.45);
+  animation: none;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
 }
 
 .btn-success {
@@ -140,8 +173,87 @@ body {
 
 .btn-success:hover {
   background-color: var(--green-dark);
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(46, 125, 50, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(46, 125, 50, 0.45);
+}
+
+.btn-success:active {
+  transform: translateY(0);
+}
+
+/* ================= KEYFRAME ANIMATIONS ================= */
+@keyframes buttonFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Loading animations */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.3) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 1000px 100%;
+  animation: shimmer 2s infinite;
 }
 
 /* ================= FORM INPUTS ================= */
@@ -149,6 +261,7 @@ input[type="text"],
 input[type="email"],
 input[type="password"],
 input[type="number"],
+input[type="tel"],
 textarea,
 select {
   width: 100%;
@@ -157,18 +270,20 @@ select {
   border: 1px solid #ddd;
   font-size: 14px;
   font-family: "Inter", sans-serif;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus,
 input[type="number"]:focus,
+input[type="tel"]:focus,
 textarea:focus,
 select:focus {
   outline: none;
   border-color: var(--red);
-  box-shadow: 0 0 0 3px rgba(255, 90, 95, 0.1);
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+  transform: translateY(-1px);
 }
 
 /* ================= PRICING TEXT ================= */
@@ -184,21 +299,29 @@ select:focus {
   font-size: 13px;
   font-weight: 600;
   display: inline-block;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.badge:hover {
+  transform: scale(1.05);
 }
 
 .badge-active {
   background: #e8f5e9;
   color: var(--green);
+  animation: fadeIn 0.3s ease;
 }
 
 .badge-inactive {
   background: #fff5f5;
   color: var(--red);
+  animation: fadeIn 0.3s ease;
 }
 
 .badge-pending {
   background: #fff8e1;
   color: #f57c00;
+  animation: fadeIn 0.3s ease, pulse 2s ease-in-out infinite;
 }
 
 /* ================= HOVER EFFECTS ================= */
@@ -294,7 +417,7 @@ select:focus {
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -304,12 +427,20 @@ select:focus {
   text-decoration: none;
 }
 
+.nav-btn svg {
+  transition: transform 0.2s ease;
+}
+
 .nav-btn:hover {
   background-color: var(--red);
   color: #ffffff;
   border-color: var(--red);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(211, 47, 47, 0.2);
+  box-shadow: 0 6px 12px rgba(211, 47, 47, 0.25);
+}
+
+.nav-btn:hover svg {
+  transform: scale(1.1);
 }
 
 .nav-account-btn {
@@ -528,3 +659,80 @@ select:focus {
     font-size: 0.9rem;
   }
 }
+
+/* ================= ANIMATED FLOWING LINES ================= */
+@keyframes flowDiagonal {
+  0% {
+    transform: translateX(-100%) translateY(100%);
+  }
+  100% {
+    transform: translateX(100%) translateY(-100%);
+  }
+}
+
+@keyframes flowDiagonalReverse {
+  0% {
+    transform: translateX(100%) translateY(100%);
+  }
+  100% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+}
+
+.flowing-lines {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.flowing-line {
+  position: absolute;
+  width: 200%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(211, 47, 47, 0.15), transparent);
+  transform-origin: center;
+}
+
+.flowing-line:nth-child(1) {
+  top: 10%;
+  animation: flowDiagonal 15s linear infinite;
+  animation-delay: 0s;
+}
+
+.flowing-line:nth-child(2) {
+  top: 20%;
+  animation: flowDiagonalReverse 18s linear infinite;
+  animation-delay: -3s;
+}
+
+.flowing-line:nth-child(3) {
+  top: 35%;
+  animation: flowDiagonal 20s linear infinite;
+  animation-delay: -6s;
+}
+
+.flowing-line:nth-child(4) {
+  top: 50%;
+  animation: flowDiagonalReverse 16s linear infinite;
+  animation-delay: -2s;
+}
+
+.flowing-line:nth-child(5) {
+  top: 65%;
+  animation: flowDiagonal 22s linear infinite;
+  animation-delay: -8s;
+}
+
+.flowing-line:nth-child(6) {
+  top: 80%;
+  animation: flowDiagonalReverse 19s linear infinite;
+  animation-delay: -5s;
+}
+
+.flowing-line:nth-child(7) {
+  top: 90%;
+  animation: flowDiagonal 17s linear infinite;
+  animation-delay: -10s;
+}
+

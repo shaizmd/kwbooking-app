@@ -1,50 +1,57 @@
 "use client";
 
 import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 export function Footer() {
+  const params = useParams();
+  const locale = params?.locale as string || 'en';
+  const t = useTranslations("footer");
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="text-gray-300 border-t mt-auto" style={{ backgroundColor: '#1a1a1a', borderColor: '#2a2a2a' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-2 mb-4">
+            <Link href={`/${locale}`} className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--red)' }}>
                 <span className="text-white font-bold text-lg">B</span>
               </div>
               <span className="font-bold text-xl text-white">BookStay</span>
-            </div>
+            </Link>
             <p className="text-gray-400 mb-4 max-w-sm">
-              Your trusted platform for booking verified properties in Kuwait and the MENA region.
+              {t("tagline")}
             </p>
             <p className="text-sm text-gray-500">
-              © {new Date().getFullYear()} BookStay. All rights reserved.
+              {t("copyright", { year: currentYear })}
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="font-semibold text-white mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-white mb-4">{t("quickLinks")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/about" className="transition hover-red">
-                  About Us
+                <Link href={`/${locale}/about`} className="transition hover-red">
+                  {t("aboutUs")}
                 </Link>
               </li>
               <li>
-                <Link href="/host" className="transition hover-red">
-                  Become a Host
+                <Link href={`/${locale}/host`} className="transition hover-red">
+                  {t("becomeHost")}
                 </Link>
               </li>
               <li>
-                <Link href="/help" className="transition hover-red">
-                  Help Center
+                <Link href={`/${locale}/help`} className="transition hover-red">
+                  {t("helpCenter")}
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="transition hover-red">
-                  Contact Us
+                <Link href={`/${locale}/contact`} className="transition hover-red">
+                  {t("contactUs")}
                 </Link>
               </li>
             </ul>
@@ -52,21 +59,21 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h3 className="font-semibold text-white mb-4">Legal</h3>
+            <h3 className="font-semibold text-white mb-4">{t("legal")}</h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/terms" className="transition hover-red">
-                  Terms of Service
+                <Link href={`/${locale}/terms`} className="transition hover-red">
+                  {t("terms")}
                 </Link>
               </li>
               <li>
-                <Link href="/privacy" className="transition hover-red">
-                  Privacy Policy
+                <Link href={`/${locale}/privacy`} className="transition hover-red">
+                  {t("privacy")}
                 </Link>
               </li>
               <li>
-                <Link href="/cookies" className="transition hover-red">
-                  Cookie Policy
+                <Link href={`/${locale}/cookies`} className="transition hover-red">
+                  {t("cookies")}
                 </Link>
               </li>
             </ul>
