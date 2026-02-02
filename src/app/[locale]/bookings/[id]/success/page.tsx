@@ -4,6 +4,7 @@ import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
+import { getTranslations } from "next-intl/server";
 
 export default async function PaymentSuccessPage({
   params,
@@ -14,6 +15,7 @@ export default async function PaymentSuccessPage({
 }) {
   const { locale, id } = await params;
   const { payment_intent } = await searchParams;
+  const t = await getTranslations("paymentSuccess");
 
   // Check authentication
   const cookieStore = await cookies();
@@ -78,8 +80,8 @@ export default async function PaymentSuccessPage({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Successful!</h1>
-        <p className="text-lg text-gray-600">Your booking has been confirmed</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("title")}</h1>
+        <p className="text-lg text-gray-600">{t("subtitle")}</p>
       </div>
 
       {/* Booking Details Card */}
@@ -105,7 +107,7 @@ export default async function PaymentSuccessPage({
           {/* Booking Details */}
           <div className="space-y-4 pb-6 border-b border-gray-200">
             <div className="flex justify-between">
-              <span className="text-gray-600">Booking ID</span>
+              <span className="text-gray-600">{t("bookingId")}</span>
               <span className="font-mono text-sm text-gray-900">{booking.id.slice(0, 8)}</span>
             </div>
             <div className="flex justify-between">
@@ -143,23 +145,23 @@ export default async function PaymentSuccessPage({
           {/* Payment Info */}
           <div className="pt-6">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-gray-600">Status</span>
+              <span className="text-gray-600">{t("status")}</span>
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Confirmed
+                {t("confirmed")}
               </span>
             </div>
             <div className="flex justify-between items-center text-lg">
-              <span className="font-semibold text-gray-900">Total Paid</span>
+              <span className="font-semibold text-gray-900">{t("totalPaid")}</span>
               <span className="text-2xl font-bold text-[#d32f2f]">
                 {formatCurrency(Number(booking.totalAmount), booking.currency, locale)}
               </span>
             </div>
             {payment_intent && (
               <p className="text-xs text-gray-500 mt-2">
-                Payment ID: {payment_intent.slice(0, 20)}...
+                {t("paymentId")}: {payment_intent.slice(0, 20)}...
               </p>
             )}
           </div>
@@ -172,14 +174,14 @@ export default async function PaymentSuccessPage({
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          What&apos;s Next?
+          {t("whatsNext")}
         </h3>
         <ul className="text-sm text-blue-800 space-y-1 ml-7">
-          <li>• A confirmation email has been sent to your email address</li>
-          <li>• You can view your booking details anytime in &quot;My Bookings&quot;</li>
-          <li>• The host will contact you with check-in instructions</li>
+          <li>• {t("confirmationEmail")}</li>
+          <li>• {t("viewInBookings")}</li>
+          <li>• {t("hostContact")}</li>
           {booking.invoice && (
-            <li>• Your invoice is ready for download below</li>
+            <li>• {t("invoiceReady")}</li>
           )}
         </ul>
       </div>
@@ -195,9 +197,9 @@ export default async function PaymentSuccessPage({
                 </svg>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">Invoice</h3>
+                <h3 className="font-semibold text-gray-900">{t("invoice")}</h3>
                 <p className="text-sm text-gray-600">
-                  {booking.invoice.invoiceNumber} • Issued {booking.invoice.issuedAt.toLocaleDateString()}
+                  {booking.invoice.invoiceNumber} • {t("issued")} {booking.invoice.issuedAt.toLocaleDateString()}
                 </p>
               </div>
             </div>
@@ -210,7 +212,7 @@ export default async function PaymentSuccessPage({
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              Download PDF
+              {t("download")}
             </a>
           </div>
         </div>
@@ -222,7 +224,7 @@ export default async function PaymentSuccessPage({
           href={`/${locale}/bookings`}
           className="flex-1 bg-[#d32f2f] text-white text-center py-3 px-6 rounded-lg font-semibold hover:bg-[#b71c1c] transition-colors"
         >
-          View My Bookings
+          {t("backToBookings")}
         </Link>
         <Link
           href={`/${locale}/properties`}

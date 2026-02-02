@@ -3,6 +3,167 @@
     "login": "Login",
     "logout": "Logout",
     "register": "Register",
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "goBackHome": "Go Back Home",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "noResults": "No results found",
+    "currency": "KWD"
+  },
+  "nav": {
+    "listProperty": "List Property",
+    "wishlist": "Wishlist",
+    "myBookings": "My Bookings",
+    "account": "Account",
+    "hostDashboard": "Host Dashboard",
+    "manageAccount": "Manage Account",
+    "signOut": "Sign out",
+    "signUp": "Sign Up",
+    "help": "Help"
+  },
+  "home": {
+    "hero": {
+      "badge": "Trusted by 1000+ guests in Kuwait",
+      "title": "Book verified homes with transparent pricing",
+      "subtitle": "No hidden fees. Clear guest limits. Instant confirmation.",
+      "browseProperties": "Browse properties",
+      "listProperty": "List your property"
+    },
+    "trust": {
+      "verified": "Verified properties",
+      "transparent": "Transparent pricing",
+      "support": "24/7 support"
+    },
+    "features": {
+      "title": "Why choose BookStay?",
+      "subtitle": "Everything you need for a seamless booking experience",
+      "verified": {
+        "title": "Verified Properties",
+        "description": "Every property is verified by our team before listing"
+      },
+      "pricing": {
+        "title": "Transparent Pricing",
+        "description": "No hidden fees. What you see is what you pay"
+      },
+      "secure": {
+        "title": "Secure Payments",
+        "description": "Your payment information is always protected"
+      },
+      "support": {
+        "title": "24/7 Customer Support",
+        "description": "We're here to help whenever you need us"
+      }
+    }
+  },
+  "properties": {
+    "title": "Available Properties",
+    "subtitle": "Browse verified properties with transparent pricing",
+    "noProperties": "No properties available",
+    "noPropertiesDesc": "Check back later for new listings",
+    "perNight": "per night",
+    "upTo": "Up to",
+    "guests": "guests"
+  },
+  "propertyDetails": {
+    "about": "About this property",
+    "amenities": "Amenities",
+    "pricing": "Pricing",
+    "basePrice": "Base price",
+    "baseGuests": "Guests included",
+    "maxGuests": "Maximum guests",
+    "extraGuestPrice": "Extra guest fee",
+    "location": "Location",
+    "bookNow": "Book Now",
+    "verified": "Verified property",
+    "transparentPricing": "Transparent pricing, no hidden fees"
+  },
+  "booking": {
+    "title": "Complete Your Booking",
+    "checkIn": "Check-in",
+    "checkOut": "Check-out",
+    "guests": "Guests",
+    "pricingBreakdown": "Pricing Breakdown",
+    "basePrice": "Base price",
+    "nights": "nights",
+    "extraGuests": "Extra guests",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "bookingTerms": "Booking Terms",
+    "minimumStay": "Minimum stay: 1 night",
+    "pendingUntilConfirmed": "Your booking will be pending until confirmed by the host",
+    "pricesLocked": "Prices are locked at time of booking",
+    "checkCancellation": "Check cancellation policy before booking",
+    "confirmBooking": "Confirm booking",
+    "whyBookWithUs": "Why book with us",
+    "bestPriceGuarantee": "Best price guarantee",
+    "noPriceIncrease": "No price increase at checkout",
+    "securePayments": "Secure payments",
+    "paymentProtected": "Your payment is protected",
+    "transparentPricing": "Transparent pricing",
+    "noHiddenFees": "No hidden fees or surprise charges",
+    "support247": "24/7 support",
+    "hereToHelp": "We're here to help"
+  },
+  "myBookings": {
+    "title": "My Bookings",
+    "subtitle": "View and manage your property bookings",
+    "noBookings": "No bookings yet",
+    "noBookingsDesc": "Start by browsing available properties",
+    "browseProperties": "Browse Properties",
+    "status": "Status",
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "completed": "Completed",
+    "completePayment": "Complete Payment",
+    "invoice": "Invoice"
+  },
+  "payment": {
+    "title": "Payment",
+    "paymentDetails": "Payment Details",
+    "paySecurely": "Pay Securely",
+    "processing": "Processing...",
+    "payNow": "Pay Now"
+  },
+  "paymentSuccess": {
+    "title": "Payment Successful!",
+    "subtitle": "Your booking has been confirmed",
+    "bookingDetails": "Booking Details",
+    "bookingId": "Booking ID",
+    "property": "Property",
+    "status": "Status",
+    "confirmed": "Confirmed",
+    "totalPaid": "Total Paid",
+    "paymentId": "Payment ID",
+    "whatsNext": "What's Next?",
+    "confirmationEmail": "A confirmation email has been sent to your email address",
+    "viewInBookings": "You can view your booking details anytime in \"My Bookings\"",
+    "hostContact": "The host will contact you with check-in instructions",
+    "invoiceReady": "Your invoice is ready for download below",
+    "invoice": "Invoice",
+    "issued": "Issued",
+    "download": "Download Invoice",
+    "invoicePending": "Invoice Pending",
+    "invoiceGenerating": "Your invoice is being generated and will be available shortly",
+    "backToBookings": "Back to My Bookings"
+  },
+  "errors": {
+    "403": {
+      "title": "403 – Access Denied",
+      "message": "You don't have permission to access this page. Please contact support if you believe this is an error."
+    },
+    "404": {
+      "title": "404 – Page Not Found",
+      "message": "The page you're looking for doesn't exist. It may have been moved or deleted."
+    }
   }
 }

@@ -3,6 +3,167 @@
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
     "register": "إنشاء حساب",
-    "dashboard": "لوحة التحكم"
+    "dashboard": "لوحة التحكم",
+    "goBackHome": "العودة للرئيسية",
+    "loading": "جاري التحميل...",
+    "error": "خطأ",
+    "success": "نجح",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "noResults": "لا توجد نتائج",
+    "currency": "د.ك"
+  },
+  "nav": {
+    "listProperty": "إضافة عقار",
+    "wishlist": "المفضلة",
+    "myBookings": "حجوزاتي",
+    "account": "الحساب",
+    "hostDashboard": "لوحة المضيف",
+    "manageAccount": "إدارة الحساب",
+    "signOut": "تسجيل الخروج",
+    "signUp": "إنشاء حساب",
+    "help": "المساعدة"
+  },
+  "home": {
+    "hero": {
+      "badge": "موثوق من قبل أكثر من 1000 ضيف في الكويت",
+      "title": "احجز منازل موثوقة بأسعار شفافة",
+      "subtitle": "بدون رسوم مخفية. حدود واضحة للضيوف. تأكيد فوري.",
+      "browseProperties": "تصفح العقارات",
+      "listProperty": "أضف عقارك"
+    },
+    "trust": {
+      "verified": "عقارات موثوقة",
+      "transparent": "أسعار شفافة",
+      "support": "دعم على مدار الساعة"
+    },
+    "features": {
+      "title": "لماذا تختار BookStay؟",
+      "subtitle": "كل ما تحتاجه لتجربة حجز سلسة",
+      "verified": {
+        "title": "عقارات موثوقة",
+        "description": "يتم التحقق من كل عقار من قبل فريقنا قبل الإدراج"
+      },
+      "pricing": {
+        "title": "أسعار شفافة",
+        "description": "بدون رسوم مخفية. ما تراه هو ما تدفعه"
+      },
+      "secure": {
+        "title": "مدفوعات آمنة",
+        "description": "معلومات الدفع الخاصة بك محمية دائمًا"
+      },
+      "support": {
+        "title": "دعم العملاء على مدار الساعة",
+        "description": "نحن هنا للمساعدة عندما تحتاج إلينا"
+      }
+    }
+  },
+  "properties": {
+    "title": "العقارات المتاحة",
+    "subtitle": "تصفح العقارات الموثوقة بأسعار شفافة",
+    "noProperties": "لا توجد عقارات متاحة",
+    "noPropertiesDesc": "تحقق لاحقًا للحصول على قوائم جديدة",
+    "perNight": "لليلة",
+    "upTo": "حتى",
+    "guests": "ضيوف"
+  },
+  "propertyDetails": {
+    "about": "عن هذا العقار",
+    "amenities": "المرافق",
+    "pricing": "الأسعار",
+    "basePrice": "السعر الأساسي",
+    "baseGuests": "عدد الضيوف المشمول",
+    "maxGuests": "الحد الأقصى للضيوف",
+    "extraGuestPrice": "رسوم الضيف الإضافي",
+    "location": "الموقع",
+    "bookNow": "احجز الآن",
+    "verified": "عقار موثق",
+    "transparentPricing": "أسعار شفافة، بدون رسوم مخفية"
+  },
+  "booking": {
+    "title": "أكمل حجزك",
+    "checkIn": "تاريخ الوصول",
+    "checkOut": "تاريخ المغادرة",
+    "guests": "الضيوف",
+    "pricingBreakdown": "تفاصيل السعر",
+    "basePrice": "السعر الأساسي",
+    "nights": "ليالي",
+    "extraGuests": "ضيوف إضافيون",
+    "subtotal": "المجموع الفرعي",
+    "total": "الإجمالي",
+    "bookingTerms": "شروط الحجز",
+    "minimumStay": "الحد الأدنى للإقامة: ليلة واحدة",
+    "pendingUntilConfirmed": "سيكون حجزك قيد الانتظار حتى يتم تأكيده من قبل المضيف",
+    "pricesLocked": "الأسعار مثبتة في وقت الحجز",
+    "checkCancellation": "تحقق من سياسة الإلغاء قبل الحجز",
+    "confirmBooking": "تأكيد الحجز",
+    "whyBookWithUs": "لماذا تحجز معنا",
+    "bestPriceGuarantee": "ضمان أفضل سعر",
+    "noPriceIncrease": "لا زيادة في السعر عند الدفع",
+    "securePayments": "مدفوعات آمنة",
+    "paymentProtected": "دفعتك محمية",
+    "transparentPricing": "أسعار شفافة",
+    "noHiddenFees": "بدون رسوم مخفية أو مفاجآت",
+    "support247": "دعم على مدار الساعة",
+    "hereToHelp": "نحن هنا للمساعدة"
+  },
+  "myBookings": {
+    "title": "حجوزاتي",
+    "subtitle": "عرض وإدارة حجوزات العقارات الخاصة بك",
+    "noBookings": "لا توجد حجوزات بعد",
+    "noBookingsDesc": "ابدأ بتصفح العقارات المتاحة",
+    "browseProperties": "تصفح العقارات",
+    "status": "الحالة",
+    "pending": "قيد الانتظار",
+    "confirmed": "مؤكد",
+    "cancelled": "ملغى",
+    "completed": "مكتمل",
+    "completePayment": "إكمال الدفع",
+    "invoice": "الفاتورة"
+  },
+  "payment": {
+    "title": "الدفع",
+    "paymentDetails": "تفاصيل الدفع",
+    "paySecurely": "ادفع بأمان",
+    "processing": "جاري المعالجة...",
+    "payNow": "ادفع الآن"
+  },
+  "paymentSuccess": {
+    "title": "تم الدفع بنجاح!",
+    "subtitle": "تم تأكيد حجزك",
+    "bookingDetails": "تفاصيل الحجز",
+    "bookingId": "رقم الحجز",
+    "property": "العقار",
+    "status": "الحالة",
+    "confirmed": "مؤكد",
+    "totalPaid": "المبلغ المدفوع",
+    "paymentId": "رقم الدفع",
+    "whatsNext": "ماذا بعد؟",
+    "confirmationEmail": "تم إرسال رسالة تأكيد إلى بريدك الإلكتروني",
+    "viewInBookings": "يمكنك عرض تفاصيل حجزك في أي وقت في \"حجوزاتي\"",
+    "hostContact": "سيتواصل معك المضيف بتعليمات تسجيل الوصول",
+    "invoiceReady": "فاتورتك جاهزة للتنزيل أدناه",
+    "invoice": "الفاتورة",
+    "issued": "الإصدار",
+    "download": "تنزيل الفاتورة",
+    "invoicePending": "الفاتورة قيد الإعداد",
+    "invoiceGenerating": "يتم إنشاء فاتورتك وستكون متاحة قريبًا",
+    "backToBookings": "العودة إلى حجوزاتي"
+  },
+  "errors": {
+    "403": {
+      "title": "403 - رفض الوصول",
+      "message": "ليس لديك إذن للوصول إلى هذه الصفحة. يرجى الاتصال بالدعم إذا كنت تعتقد أن هذا خطأ."
+    },
+    "404": {
+      "title": "404 - الصفحة غير موجودة",
+      "message": "الصفحة التي تبحث عنها غير موجودة. ربما تم نقلها أو حذفها."
+    }
   }
 }

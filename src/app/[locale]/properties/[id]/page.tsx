@@ -2,6 +2,7 @@ import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
 export default async function PropertyDetailsPage({
   params,
@@ -9,6 +10,8 @@ export default async function PropertyDetailsPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  const t = await getTranslations("propertyDetails");
+  const tCommon = await getTranslations("common");
 
   const property = await prisma.property.findFirst({
     where: {
@@ -75,7 +78,7 @@ export default async function PropertyDetailsPage({
           {/* Description */}
           <div className="card">
             <h2 className="text-2xl font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>
-              About this property
+              {t("about")}
             </h2>
             <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
               {property.description}
@@ -108,7 +111,7 @@ export default async function PropertyDetailsPage({
           {/* Pricing Card */}
           <div className="card sticky top-8">
             <h3 className="text-2xl font-bold mb-6" style={{ color: 'var(--text-dark)' }}>
-              Pricing
+              {t("pricing")}
             </h3>
 
             <div className="space-y-4 mb-6">
@@ -127,14 +130,14 @@ export default async function PropertyDetailsPage({
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span style={{ color: 'var(--text-muted)' }}>Guests included</span>
+                  <span style={{ color: 'var(--text-muted)' }}>{t("baseGuests")}</span>
                   <span className="font-semibold" style={{ color: 'var(--text-dark)' }}>
                     {formatNumber(property.baseGuests, locale)}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span style={{ color: 'var(--text-muted)' }}>Maximum guests</span>
+                  <span style={{ color: 'var(--text-muted)' }}>{t("maxGuests")}</span>
                   <span className="font-semibold" style={{ color: 'var(--text-dark)' }}>
                     {formatNumber(property.maxGuests, locale)}
                   </span>
@@ -142,7 +145,7 @@ export default async function PropertyDetailsPage({
 
                 {property.extraGuestPrice && Number(property.extraGuestPrice) > 0 && (
                   <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: 'var(--border-light)' }}>
-                    <span style={{ color: 'var(--text-muted)' }}>Extra guest fee</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{t("extraGuestPrice")}</span>
                     <span className="font-semibold" style={{ color: 'var(--text-dark)' }}>
                       {formatCurrency(
                         Number(property.extraGuestPrice),
@@ -161,7 +164,7 @@ export default async function PropertyDetailsPage({
                 href={`/${locale}/properties/${id}/book`}
                 className="w-full btn-primary block text-center py-4 font-bold"
               >
-                Book Now
+                {t("bookNow")}
               </Link>
             </div>
           </div>
@@ -196,10 +199,10 @@ export default async function PropertyDetailsPage({
                 </div>
                 <div>
                   <p className="font-medium" style={{ color: 'var(--text-dark)' }}>
-                    Verified property
+                    {t("verified")}
                   </p>
                   <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    Transparent pricing, no hidden fees
+                    {t("transparentPricing")}
                   </p>
                 </div>
               </div>
