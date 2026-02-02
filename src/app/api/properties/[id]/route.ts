@@ -20,8 +20,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const user = await verifyAuth(request);
-    
+    const user = await verifyAuth();
+
     if (!user || user.role !== "HOST") {
       return NextResponse.json(
         { error: "Unauthorized. Only hosts can update properties." },

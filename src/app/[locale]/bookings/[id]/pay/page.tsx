@@ -131,18 +131,18 @@ export default async function PaymentPage({
             <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">
-                  {formatCurrency(Number(booking.property.pricePerNight), booking.currency, locale)} × {nights} nights
+                  {formatCurrency(Number(booking.property.basePrice), booking.currency, locale)} × {nights} nights
                 </span>
                 <span className="text-gray-900">
-                  {formatCurrency(Number(booking.property.pricePerNight) * nights, booking.currency, locale)}
+                  {formatCurrency(Number(booking.property.basePrice) * nights, booking.currency, locale)}
                 </span>
               </div>
               
-              {Number(booking.totalAmount) > Number(booking.property.pricePerNight) * nights && (
+              {Number(booking.totalAmount) > Number(booking.property.basePrice) * nights && (
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Extra guest charges</span>
                   <span className="text-gray-900">
-                    {formatCurrency(Number(booking.totalAmount) - Number(booking.property.pricePerNight) * nights, booking.currency, locale)}
+                    {formatCurrency(Number(booking.totalAmount) - Number(booking.property.basePrice) * nights, booking.currency, locale)}
                   </span>
                 </div>
               )}

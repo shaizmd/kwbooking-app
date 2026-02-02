@@ -22,6 +22,12 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} dir={localeDirection[locale as Locale]}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.cdnfonts.com/css/geometria" rel="stylesheet" />
+      </head>
       <body className="min-h-screen bg-gray-50 antialiased flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Navigation />

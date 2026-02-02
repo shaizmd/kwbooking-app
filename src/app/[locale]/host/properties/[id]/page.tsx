@@ -133,7 +133,7 @@ export default async function EditPropertyPage({
               </div>
 
               {/* Rating & Features */}
-              {property.averageRating > 0 && (
+              {property.averageRating && property.averageRating > 0 && (
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">⭐</span>

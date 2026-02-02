@@ -23,7 +23,7 @@ export async function publishProperty(propertyId: string) {
   const activeSubscription = await prisma.subscription.findFirst({
     where: {
       hostId: user.sub,
-      isActive: true,
+      status: "ACTIVE",
       endsAt: { gt: new Date() },
     },
   });

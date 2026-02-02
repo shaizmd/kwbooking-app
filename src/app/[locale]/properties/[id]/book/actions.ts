@@ -106,7 +106,7 @@ export async function getBookingForPayment(bookingId: string) {
         select: {
           title: true,
           location: true,
-          pricePerNight: true,
+          basePrice: true,
           images: {
             orderBy: { order: "asc" },
             take: 1,

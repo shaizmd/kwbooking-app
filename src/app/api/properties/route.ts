@@ -23,7 +23,7 @@ const propertySchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await verifyAuth(request);
+    const user = await verifyAuth();
     
     if (!user || user.role !== "HOST") {
       return NextResponse.json(
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     console.error("Error creating property:", error);
     return NextResponse.json(
-      { error: error.message || "Internal server error" },
+      { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }
     );
   }
