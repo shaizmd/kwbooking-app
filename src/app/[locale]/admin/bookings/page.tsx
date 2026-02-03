@@ -31,7 +31,7 @@ export default async function AdminBookingsPage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Booking Management</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Booking Management</h2>
         <p className="text-gray-600">Total bookings: {bookings.length}</p>
       </div>
 
@@ -126,7 +126,7 @@ export default async function AdminBookingsPage() {
                             : booking.status === "CANCELLED"
                             ? "bg-red-100 text-red-800"
                             : booking.status === "COMPLETED"
-                            ? "bg-blue-100 text-blue-800"
+                            ? "bg-green-100 text-green-800"
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >

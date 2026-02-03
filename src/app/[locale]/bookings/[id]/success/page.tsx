@@ -80,7 +80,7 @@ export default async function PaymentSuccessPage({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("title")}</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">{t("title")}</h1>
         <p className="text-lg text-gray-600">{t("subtitle")}</p>
       </div>
 
@@ -100,7 +100,7 @@ export default async function PaymentSuccessPage({
         <div className="p-6">
           {/* Property Info */}
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">{booking.property.title}</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-1">{booking.property.title}</h2>
             <p className="text-gray-600">{booking.property.location}</p>
           </div>
 
@@ -155,7 +155,7 @@ export default async function PaymentSuccessPage({
             </div>
             <div className="flex justify-between items-center text-lg">
               <span className="font-semibold text-gray-900">{t("totalPaid")}</span>
-              <span className="text-2xl font-bold text-[#d32f2f]">
+              <span className="text-xl font-semibold" style={{ color: 'var(--red)' }}>
                 {formatCurrency(Number(booking.totalAmount), booking.currency, locale)}
               </span>
             </div>
@@ -169,14 +169,14 @@ export default async function PaymentSuccessPage({
       </div>
 
       {/* Next Steps */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-        <h3 className="font-semibold text-blue-900 mb-2 flex items-center gap-2">
+      <div className="rounded-lg p-6 mb-6 border" style={{ backgroundColor: 'var(--gold-soft)', borderColor: 'var(--border-light)' }}>
+        <h3 className="font-semibold mb-2 flex items-center gap-2" style={{ color: 'var(--text-dark)' }}>
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           {t("whatsNext")}
         </h3>
-        <ul className="text-sm text-blue-800 space-y-1 ml-7">
+        <ul className="text-sm space-y-1 ml-7" style={{ color: 'var(--text-muted)' }}>
           <li>• {t("confirmationEmail")}</li>
           <li>• {t("viewInBookings")}</li>
           <li>• {t("hostContact")}</li>

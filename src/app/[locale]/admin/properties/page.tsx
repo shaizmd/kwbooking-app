@@ -26,7 +26,7 @@ export default async function AdminPropertiesPage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Property Management</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Property Management</h2>
         <p className="text-gray-600">Total properties: {properties.length}</p>
       </div>
 

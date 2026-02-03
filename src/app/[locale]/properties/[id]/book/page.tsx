@@ -174,7 +174,7 @@ export default async function BookingPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link
             href={`/${locale}/properties/${id}`}
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="inline-flex items-center font-medium transition-colors" style={{ color: 'var(--red)' }}
           >
             <svg
               className="w-5 h-5 mr-1"
@@ -197,7 +197,7 @@ export default async function BookingPage({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">
             Enter your details
           </h1>
           <p className="text-gray-600">
@@ -211,7 +211,7 @@ export default async function BookingPage({
             <form action={handleBooking}>
               {/* Guest Details */}
               <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Enter your details
                 </h2>
 
@@ -236,7 +236,7 @@ export default async function BookingPage({
                       required
                       defaultValue={user.fullName || ""}
                       placeholder="Enter your full name"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Enter your name as it appears on your ID
@@ -258,7 +258,7 @@ export default async function BookingPage({
                       required
                       defaultValue={user.email}
                       placeholder="example@email.com"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Confirmation email goes to this address
@@ -279,7 +279,7 @@ export default async function BookingPage({
                       name="phone"
                       defaultValue={user.phone || ""}
                       placeholder="+965 XXXX XXXX"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
                     />
                     <p className="text-xs text-gray-500 mt-1">
                       Needed by the property to validate your booking
@@ -309,7 +309,7 @@ export default async function BookingPage({
                   <select
                     id="arrivalTime"
                     name="arrivalTime"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
                   >
                     <option value="">Select time (optional)</option>
                     <option value="00:00 - 01:00">00:00 - 01:00</option>
@@ -366,7 +366,7 @@ export default async function BookingPage({
                     name="specialRequests"
                     rows={4}
                     placeholder="E.g., quiet room, high floor, early check-in..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent resize-none" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
                   />
                 </div>
               </div>
@@ -379,15 +379,15 @@ export default async function BookingPage({
                     id="terms"
                     name="terms"
                     required
-                    className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="mt-1 w-4 h-4 border-gray-300 rounded" style={{ color: 'var(--red)', '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
                   />
                   <label htmlFor="terms" className="text-sm text-gray-700">
                     I agree to the{" "}
-                    <Link href="/terms" className="text-blue-600 hover:underline">
+                    <Link href="/terms" className="hover:underline" style={{ color: 'var(--red)' }}>
                       terms and conditions
                     </Link>{" "}
                     and{" "}
-                    <Link href="/privacy" className="text-blue-600 hover:underline">
+                    <Link href="/privacy" className="hover:underline" style={{ color: 'var(--red)' }}>
                       privacy policy
                     </Link>
                     . By completing this booking, I understand that the host will
@@ -399,7 +399,7 @@ export default async function BookingPage({
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg"
+                className="w-full text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg" style={{ backgroundColor: 'var(--red)' }}
               >
                 Confirm Booking
               </button>

@@ -74,11 +74,11 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href={`/${locale}`} className="inline-flex items-center gap-2 mb-6">
             <div className="w-10 h-10 flex items-center justify-center rounded-xl" style={{ backgroundColor: 'var(--red)' }}>
-              <span className="text-white font-bold text-xl">B</span>
+              <span className="text-white font-semibold text-xl">B</span>
             </div>
-            <span className="text-2xl font-bold" style={{ color: 'var(--text-dark)' }}>BookStay</span>
+            <span className="text-xl font-semibold" style={{ color: 'var(--text-dark)' }}>BookStay</span>
           </Link>
-          <h1 className="text-4xl font-extrabold mb-3" style={{ color: '#010000', fontWeight: 800 }}>
+          <h1 className="text-3xl font-semibold mb-3" style={{ color: 'var(--text-dark)' }}>
             Welcome back
           </h1>
           <p className="subtext">
@@ -88,7 +88,7 @@ export default function LoginPage() {
 
         {/* Form Card */}
         <motion.div 
-          className="bg-white rounded-2xl p-8 shadow-lg border"
+          className="bg-white rounded-xl p-8 shadow-sm border"
           style={{ borderColor: 'rgba(211, 47, 47, 0.1)' }}
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
@@ -148,7 +148,7 @@ export default function LoginPage() {
             <motion.button
               type="submit"
               disabled={loading}
-              className="w-full px-8 py-4 rounded-xl font-bold text-base transition-all shadow-md hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-6 py-3 rounded-lg font-medium text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: '#d32f2f',
                 color: 'white',

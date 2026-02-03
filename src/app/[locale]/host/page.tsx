@@ -117,7 +117,7 @@ export default async function HostDashboard() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-dark)' }}>
+        <h1 className="text-3xl font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>
           Welcome back, Host!
         </h1>
         <p style={{ color: 'var(--text-muted)' }}>
@@ -175,7 +175,7 @@ export default async function HostDashboard() {
 
       {/* Quick Actions */}
       <div className="card mb-8">
-        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-dark)' }}>Quick Actions</h2>
+        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
             href="/host/properties/new"
@@ -221,7 +221,7 @@ export default async function HostDashboard() {
         {/* Recent Properties */}
         <div className="card">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold" style={{ color: 'var(--text-dark)' }}>Recent Properties</h2>
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--text-dark)' }}>Recent Properties</h2>
             <Link href="/host/properties" className="text-sm font-semibold hover:underline" style={{ color: 'var(--red)' }}>
               View All
             </Link>
@@ -250,7 +250,7 @@ export default async function HostDashboard() {
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 mb-1 truncate">{property.title}</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1 truncate">{property.title}</h4>
                       <div className="flex items-center text-sm text-gray-600 space-x-4">
                         <span className="flex items-center">
                           <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,7 +264,7 @@ export default async function HostDashboard() {
                     </div>
                     <div className="ml-4 flex items-center space-x-3">
                       <div className="text-right">
-                        <div className="font-bold" style={{ color: 'var(--red)' }}>
+                        <div className="font-semibold" style={{ color: 'var(--red)' }}>
                           {formatCurrency(Number(property.basePrice), property.currency, 'en')}
                         </div>
                         <div className="text-xs text-gray-500">per night</div>
@@ -281,7 +281,7 @@ export default async function HostDashboard() {
         {/* Recent Bookings */}
         <div className="card">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold" style={{ color: 'var(--text-dark)' }}>Recent Bookings</h2>
+            <h2 className="text-lg font-semibold" style={{ color: 'var(--text-dark)' }}>Recent Bookings</h2>
             <Link href="/host/bookings" className="text-sm font-semibold hover:underline" style={{ color: 'var(--red)' }}>
               View All
             </Link>
@@ -305,7 +305,7 @@ export default async function HostDashboard() {
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-bold text-gray-900 mb-1 truncate">{booking.property.title}</h4>
+                      <h4 className="font-semibold text-gray-900 mb-1 truncate">{booking.property.title}</h4>
                       <p className="text-sm text-gray-600 mb-2">
                         {booking.customer.fullName || booking.customer.email}
                       </p>
@@ -365,7 +365,7 @@ function StatCard({
         </div>
       </div>
       <p className="text-sm mb-1" style={{ color: 'var(--text-muted)' }}>{title}</p>
-      <p className="text-3xl font-bold mb-1" style={{ color: 'var(--text-dark)' }}>{value}</p>
+      <p className="text-2xl font-semibold mb-1" style={{ color: 'var(--text-dark)' }}>{value}</p>
       {subtitle && (
         <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{subtitle}</p>
       )}
@@ -379,7 +379,7 @@ function StatusBadge({ status }: { status: string }) {
     INACTIVE: { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' },
     DRAFT: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
     PENDING: { bg: 'bg-yellow-50', text: 'text-yellow-700', border: 'border-yellow-200' },
-    CONFIRMED: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+    CONFIRMED: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
     CANCELLED: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200' },
     COMPLETED: { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-200' },
   };

@@ -74,7 +74,7 @@ export default function RegisterPage() {
       >
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-extrabold mb-3" style={{ color: '#010000', fontWeight: 800 }}>
+          <h1 className="text-3xl font-semibold mb-3" style={{ color: 'var(--text-dark)' }}>
             Create your account
           </h1>
           <p className="subtext">
@@ -84,7 +84,7 @@ export default function RegisterPage() {
 
         {/* Form Card */}
         <motion.div 
-          className="bg-white rounded-2xl p-8 shadow-lg border"
+          className="bg-white rounded-xl p-8 shadow-sm border"
           style={{ borderColor: 'rgba(211, 47, 47, 0.1)' }}
           initial={{ scale: 0.95 }}
           animate={{ scale: 1 }}
@@ -231,7 +231,7 @@ export default function RegisterPage() {
             <motion.button
               type="submit"
               disabled={loading}
-              className="w-full px-8 py-4 rounded-xl font-bold text-base transition-all shadow-md hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-6 py-3 rounded-lg font-medium text-base transition-all disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 backgroundColor: '#d32f2f',
                 color: 'white',

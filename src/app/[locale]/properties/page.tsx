@@ -69,12 +69,12 @@ export default async function PublicPropertiesPage({
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header Section */}
-      <div className="bg-blue-900 text-white">
+      <div className="text-white" style={{ backgroundColor: 'var(--red)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-2xl font-bold mb-2">
+          <h1 className="text-xl font-semibold mb-2">
             {t("title")}
           </h1>
-          <p className="text-blue-100 text-sm">
+          <p className="text-sm" style={{ opacity: 0.9 }}>
             {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
           </p>
         </div>

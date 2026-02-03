@@ -158,7 +158,7 @@ export default async function PropertyDetailsPage({
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <Link
             href={`/${locale}/properties`}
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="inline-flex items-center font-medium transition-colors" style={{ color: 'var(--red)' }}
           >
             <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -174,7 +174,7 @@ export default async function PropertyDetailsPage({
           <div className="flex items-start justify-between gap-4 mb-3">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-2xl font-semibold text-gray-900">
                   {property.title}
                 </h1>
                 {property.featured && (
@@ -193,7 +193,7 @@ export default async function PropertyDetailsPage({
                 </div>
                 {property.averageRating && property.averageRating > 0 && (
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 bg-blue-900 text-white px-2 py-1 rounded-lg font-semibold">
+                    <div className="flex items-center gap-1 text-white px-2 py-1 rounded-lg font-semibold" style={{ backgroundColor: 'var(--red)' }}>
                       <span className="text-sm">{property.averageRating.toFixed(1)}</span>
                     </div>
                     <div>
@@ -309,7 +309,7 @@ export default async function PropertyDetailsPage({
             {/* Most Popular Facilities - Booking.com Style */}
             {property.amenities && property.amenities.length > 0 && (
               <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Most popular facilities</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Most popular facilities</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                   {property.amenities.slice(0, 10).map((amenity) => (
                     <div key={amenity.id} className="flex items-center gap-3">
@@ -321,7 +321,7 @@ export default async function PropertyDetailsPage({
                   ))}
                 </div>
                 {property.amenities.length > 10 && (
-                  <button className="mt-4 text-blue-600 hover:text-blue-700 font-semibold text-sm">
+                  <button className="mt-4 font-semibold text-sm transition-colors" style={{ color: 'var(--red)' }}>
                     Show all {property.amenities.length} facilities →
                   </button>
                 )}
@@ -330,7 +330,7 @@ export default async function PropertyDetailsPage({
 
             {/* Property Description */}
             <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">About this property</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">About this property</h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                 {property.description}
               </p>
@@ -338,7 +338,7 @@ export default async function PropertyDetailsPage({
 
             {/* Room Details */}
             <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Property highlights</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Property highlights</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-gray-900 font-semibold mb-1">{property.bedrooms}</div>
@@ -380,7 +380,7 @@ export default async function PropertyDetailsPage({
             {/* Check-in/Check-out */}
             {property.checkInTime && property.checkOutTime && (
               <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Check-in & Check-out</h2>
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Check-in & Check-out</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -461,7 +461,7 @@ export default async function PropertyDetailsPage({
         {/* Room Selection Section - Booking.com style */}
         {formattedRoomTypes.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Availability</h2>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Availability</h2>
             <RoomSelection
               roomTypes={formattedRoomTypes}
               currency={property.currency}
@@ -476,7 +476,7 @@ export default async function PropertyDetailsPage({
 
         {/* Fallback for properties without room types */}
         {formattedRoomTypes.length === 0 && (
-          <div className="mt-12 border-2 border-blue-600 rounded-lg p-8 text-center">
+          <div className="mt-12 border-2 rounded-lg p-8 text-center" style={{ borderColor: 'var(--red)' }}>
             <h3 className="text-2xl font-bold text-gray-900 mb-4">Book this property</h3>
             <div className="mb-6">
               <div className="text-4xl font-bold text-gray-900 mb-2">

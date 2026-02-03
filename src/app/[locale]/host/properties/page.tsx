@@ -20,7 +20,7 @@ export default async function HostPropertiesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-bold mb-2" style={{ color: 'var(--text-dark)' }}>My Properties</h1>
+          <h1 className="text-3xl font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>My Properties</h1>
           <p style={{ color: 'var(--text-muted)' }}>
             Manage your property listings and update availability
           </p>
@@ -118,7 +118,7 @@ function PropertyCard({
 
       {/* Content */}
       <div className="p-5">
-        <h3 className="text-lg font-bold mb-2 line-clamp-1" style={{ color: 'var(--text-dark)' }}>
+        <h3 className="text-base font-semibold mb-2 line-clamp-1" style={{ color: 'var(--text-dark)' }}>
           {property.title}
         </h3>
 
@@ -156,7 +156,7 @@ function PropertyCard({
 
         <div className="flex items-center justify-between pt-4 border-t" style={{ borderColor: 'var(--border-light)' }}>
           <div>
-            <p className="text-2xl font-bold price-text">{property.basePrice.toString()} KWD</p>
+            <p className="text-xl font-semibold price-text">{property.basePrice.toString()} KWD</p>
             <p className="text-xs" style={{ color: 'var(--text-muted)' }}>per night</p>
           </div>
           <div className="text-right text-sm" style={{ color: 'var(--text-muted)' }}>

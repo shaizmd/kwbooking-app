@@ -44,7 +44,7 @@ export function PropertyFilters({
             Property Type
           </label>
           <select 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent text-sm" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
             value={currentType || "all"}
             onChange={(e) => updateSearchParams("type", e.target.value)}
           >
@@ -65,7 +65,7 @@ export function PropertyFilters({
           <div className="space-y-3">
             <input
               type="number"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent text-sm" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
               placeholder="Min price (KWD)"
               defaultValue={currentMinPrice || ""}
               onBlur={(e) => updateSearchParams("minPrice", e.target.value)}
@@ -77,7 +77,7 @@ export function PropertyFilters({
             />
             <input
               type="number"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent text-sm" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
               placeholder="Max price (KWD)"
               defaultValue={currentMaxPrice || ""}
               onBlur={(e) => updateSearchParams("maxPrice", e.target.value)}
@@ -96,7 +96,7 @@ export function PropertyFilters({
             Sort By
           </label>
           <select 
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:border-transparent text-sm" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
             value={currentSort || "featured"}
             onChange={(e) => updateSearchParams("sort", e.target.value)}
           >

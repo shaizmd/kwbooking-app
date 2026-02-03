@@ -16,7 +16,7 @@ export default async function HostBookingsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">
+      <h1 className="text-2xl font-semibold text-gray-900 mb-8">
         Bookings
       </h1>
 
@@ -74,7 +74,7 @@ export default async function HostBookingsPage() {
 function StatusBadge({ status }: { status: string }) {
   const statusStyles = {
     PENDING: "bg-yellow-50 text-yellow-700 border border-yellow-200",
-    CONFIRMED: "bg-blue-50 text-blue-700 border border-blue-200",
+    CONFIRMED: "bg-green-50 text-green-700 border border-green-200",
     CANCELLED: "bg-red-50 text-red-700 border border-red-200",
     COMPLETED: "bg-green-50 text-green-700 border border-green-200",
   };

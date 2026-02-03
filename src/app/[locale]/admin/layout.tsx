@@ -24,7 +24,7 @@ export default async function AdminLayout({
                 </svg>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Admin Panel</h1>
+                <h1 className="text-base font-semibold text-gray-900">Admin Panel</h1>
                 <p className="text-xs text-gray-500">System Management</p>
               </div>
             </div>

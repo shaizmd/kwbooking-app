@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
 import { getCurrentUser, logout } from "@/lib/auth/client";
 import type { User } from "@/lib/auth/client";
@@ -13,17 +13,20 @@ export function Navigation() {
   const t = useTranslations("nav");
   const tCommon = useTranslations("common");
   const router = useRouter();
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAccountDropdown, setShowAccountDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Fetch user on mount and when pathname changes
   useEffect(() => {
+    setLoading(true);
     getCurrentUser()
       .then(setUser)
       .finally(() => setLoading(false));
-  }, []);
+  }, [pathname]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -50,7 +53,7 @@ export function Navigation() {
         {/* Logo */}
         <Link href="/" className="nav-logo-link">
           <div className="nav-logo-icon">
-            <span className="text-white font-bold text-lg">B</span>
+            <span className="text-white font-semibold text-lg">B</span>
           </div>
           <span className="nav-logo-text">BookStay</span>
         </Link>
@@ -96,7 +99,7 @@ export function Navigation() {
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  {user ? user.email.split('@')[0] : t("account")}
+                  {user ? (user.fullName || user.email.split('@')[0]) : t("account")}
                   <svg 
                     className={`w-3 h-3 transition-transform ${showAccountDropdown ? 'rotate-180' : ''}`} 
                     fill="none" 

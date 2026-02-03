@@ -51,7 +51,7 @@ export default async function PaymentPage({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete Your Payment</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Complete Your Payment</h1>
         <p className="text-gray-600">Secure payment powered by Stripe</p>
       </div>
 
@@ -152,7 +152,7 @@ export default async function PaymentPage({
             <div className="border-t border-gray-200 mt-4 pt-4">
               <div className="flex justify-between items-center">
                 <span className="text-lg font-semibold text-gray-900">Total</span>
-                <span className="text-2xl font-bold text-[#d32f2f]">
+                <span className="text-xl font-semibold" style={{ color: 'var(--red)' }}>
                   {formatCurrency(Number(booking.totalAmount), booking.currency, locale)}
                 </span>
               </div>

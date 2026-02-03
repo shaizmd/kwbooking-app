@@ -14,7 +14,7 @@ export default function NotFound() {
         {/* Large 404 Number */}
         <div className="mb-8">
           <h1 
-            className="text-9xl sm:text-[12rem] font-extrabold leading-none mb-2"
+            className="text-8xl sm:text-9xl font-bold leading-none mb-2"
             style={{ 
               fontFamily: 'Geometria, system-ui, sans-serif',
               background: 'linear-gradient(135deg, var(--red) 0%, var(--red-dark) 100%)',
@@ -56,7 +56,7 @@ export default function NotFound() {
 
         {/* Heading */}
         <h2 
-          className="text-4xl sm:text-5xl font-bold mb-6"
+          className="text-3xl sm:text-4xl font-semibold mb-6"
           style={{ 
             fontFamily: 'Geometria, system-ui, sans-serif',
             color: '#010000',
@@ -87,7 +87,7 @@ export default function NotFound() {
           
           <Link
             href="/properties"
-            className="group px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:-translate-y-1 w-full sm:w-auto"
+            className="group px-6 py-3 rounded-lg font-medium text-base transition-all w-full sm:w-auto"
             style={{ 
               backgroundColor: 'white',
               color: '#222222',

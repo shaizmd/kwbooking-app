@@ -29,7 +29,7 @@ export default async function AdminDashboard() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
-      color: "bg-blue-500",
+      color: "bg-red-500",
     },
     {
       name: "Total Properties",
@@ -86,7 +86,7 @@ export default async function AdminDashboard() {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Dashboard Overview</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Dashboard Overview</h2>
         <p className="text-gray-600">System-wide statistics and metrics</p>
       </div>
 
@@ -100,7 +100,7 @@ export default async function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600 mb-1">{stat.name}</p>
-                <p className="text-3xl font-bold text-gray-900">{stat.value.toLocaleString()}</p>
+                <p className="text-2xl font-semibold text-gray-900">{stat.value.toLocaleString()}</p>
               </div>
               <div className={`${stat.color} text-white p-3 rounded-lg`}>
                 {stat.icon}

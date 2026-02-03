@@ -103,7 +103,7 @@ export default function RoomSelection({
   return (
     <div className="space-y-6">
       {/* Table Header */}
-      <div className="bg-blue-800 text-white rounded-t-lg overflow-hidden">
+      <div className="text-white rounded-t-lg overflow-hidden" style={{ backgroundColor: 'var(--red)' }}>
         <div className="grid grid-cols-12 gap-4 px-6 py-4 font-semibold">
           <div className="col-span-3">Room type</div>
           <div className="col-span-2">Number of guests</div>
@@ -126,7 +126,7 @@ export default function RoomSelection({
           >
             {/* Room Type Header */}
             <div className="mb-4">
-              <h3 className="text-xl font-bold text-blue-800 mb-2">
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>
                 {roomType.name}
               </h3>
               <div className="flex items-center gap-4 text-sm text-gray-600">
@@ -185,7 +185,7 @@ export default function RoomSelection({
                           {formatCurrency(pkg.originalPrice, currency, locale)}
                         </div>
                       )}
-                      <div className="text-xl font-bold text-gray-900">
+                      <div className="text-lg font-semibold text-gray-900">
                         {formatCurrency(pkg.finalPrice, currency, locale)}
                       </div>
                       <div className="text-xs text-gray-500">
@@ -320,7 +320,7 @@ export default function RoomSelection({
                   <div className="col-span-2">
                     <div className="space-y-3">
                       <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
                         value={
                           selectedRooms[roomType.id]?.packageId === pkg.id
                             ? selectedRooms[roomType.id].quantity
@@ -352,7 +352,7 @@ export default function RoomSelection({
                                 : "rooms"}{" "}
                               for
                             </div>
-                            <div className="text-2xl font-bold text-gray-900 mt-1">
+                            <div className="text-xl font-semibold text-gray-900 mt-1">
                               {formatCurrency(
                                 pkg.finalPrice *
                                   selectedRooms[roomType.id].quantity,
@@ -388,7 +388,7 @@ export default function RoomSelection({
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
               <div className="text-sm text-gray-600">Total price</div>
-              <div className="text-3xl font-bold text-gray-900">
+              <div className="text-2xl font-semibold text-gray-900">
                 {formatCurrency(calculateTotal(), currency, locale)}
               </div>
               <div className="text-xs text-gray-500">

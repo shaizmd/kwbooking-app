@@ -66,7 +66,7 @@ export default function NewPropertyPage() {
           </svg>
           Back to Properties
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Add New Property</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Add New Property</h1>
         <p className="text-gray-600">
           Fill in the details below to list your property
         </p>

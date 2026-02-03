@@ -34,7 +34,7 @@ export function HostCTA({ locale }: { locale: string }) {
           </motion.div>
 
           {/* Heading */}
-          <h2 className="text-4xl sm:text-5xl font-extrabold mb-6 leading-tight" style={{ color: '#1a1a1a' }}>
+          <h2 className="text-3xl sm:text-4xl font-semibold mb-6 leading-tight" style={{ color: '#1a1a1a' }}>
             {t("title")}
           </h2>
 
@@ -48,7 +48,7 @@ export function HostCTA({ locale }: { locale: string }) {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 href={`/${locale}/register`}
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-base transition-all shadow-md hover:shadow-xl"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-base transition-all"
                 style={{
                   backgroundColor: '#d32f2f',
                   color: 'white',

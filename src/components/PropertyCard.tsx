@@ -99,7 +99,7 @@ export function PropertyCard({ property, locale, index = 0 }: PropertyCardProps)
                 </div>
 
                 {/* Title */}
-                <h3 className="text-lg font-semibold mb-1 text-blue-800 group-hover:underline line-clamp-2">
+                <h3 className="text-lg font-semibold mb-1 group-hover:underline line-clamp-2" style={{ color: 'var(--text-dark)' }}>
                   {property.title}
                 </h3>
 
@@ -155,7 +155,7 @@ export function PropertyCard({ property, locale, index = 0 }: PropertyCardProps)
                 <div className="flex-1">
                   {property.averageRating && property.averageRating > 0 && (
                     <div className="flex items-center gap-2 mb-2">
-                      <div className="bg-blue-900 text-white px-2 py-1 rounded-t-lg rounded-br-lg text-xs font-bold">
+                      <div className="text-white px-2 py-1 rounded-t-lg rounded-br-lg text-xs font-medium" style={{ backgroundColor: 'var(--red-dark)' }}>
                         {property.averageRating.toFixed(1)}
                       </div>
                       <div className="text-sm">
@@ -172,7 +172,7 @@ export function PropertyCard({ property, locale, index = 0 }: PropertyCardProps)
                 
                 <div className="text-right">
                   <div className="text-sm text-gray-600 mb-1">1 night</div>
-                  <div className="text-2xl font-bold text-gray-900">
+                  <div className="text-xl font-semibold text-gray-900">
                     {formatCurrency(
                       Number(property.basePrice),
                       property.currency,

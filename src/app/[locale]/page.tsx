@@ -53,7 +53,7 @@ export default async function HomePage({
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight" style={{ 
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-semibold mb-6 leading-tight" style={{ 
               fontFamily: 'Geometria, system-ui, sans-serif',
               letterSpacing: '-0.02em',
               color: '#010000',
@@ -86,7 +86,7 @@ export default async function HomePage({
               
               <Link
                 href={`/${locale}/host/properties/new`}
-                className="group px-8 py-4 rounded-xl font-bold text-lg transition-all transform hover:-translate-y-1 w-full sm:w-auto"
+                className="group px-6 py-3 rounded-lg font-medium text-base transition-all w-full sm:w-auto"
                 style={{ 
                   backgroundColor: 'white',
                   color: '#222222',
@@ -133,7 +133,7 @@ export default async function HomePage({
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: 'var(--text-dark)' }}>
+            <h2 className="text-2xl sm:text-3xl font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>
               {t("features.title")}
             </h2>
             <p className="subtext max-w-2xl mx-auto">
@@ -149,7 +149,7 @@ export default async function HomePage({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-dark)' }}>{t("features.verified.title")}</h3>
+              <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>{t("features.verified.title")}</h3>
               <p className="subtext">
                 {t("features.verified.description")}
               </p>

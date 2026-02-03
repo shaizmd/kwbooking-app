@@ -52,7 +52,7 @@ export default async function CustomerBookingsPage({
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("title")}</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">{t("title")}</h1>
         <p className="text-gray-600">{t("subtitle")}</p>
       </div>
 
@@ -84,7 +84,7 @@ export default async function CustomerBookingsPage({
               PENDING: "bg-yellow-100 text-yellow-800",
               CONFIRMED: "bg-green-100 text-green-800",
               CANCELLED: "bg-red-100 text-red-800",
-              COMPLETED: "bg-blue-100 text-blue-800",
+              COMPLETED: "bg-green-100 text-green-800",
               REFUNDED: "bg-gray-100 text-gray-800",
             };
 
@@ -109,7 +109,7 @@ export default async function CustomerBookingsPage({
                   <div className="flex-1 p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div>
-                        <h3 className="text-xl font-bold text-gray-900 mb-1">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
                           {booking.property.title}
                         </h3>
                         <p className="text-gray-600 text-sm">{booking.property.location}</p>
@@ -148,7 +148,7 @@ export default async function CustomerBookingsPage({
                       </div>
                       <div>
                         <p className="text-xs text-gray-500 mb-1">Total</p>
-                        <p className="font-bold text-[#d32f2f]">
+                        <p className="font-semibold" style={{ color: 'var(--red)' }}>
                           {formatCurrency(Number(booking.totalAmount), booking.currency, locale)}
                         </p>
                       </div>

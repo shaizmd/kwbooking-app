@@ -33,7 +33,7 @@ export default async function AdminInvoicesPage() {
   return (
     <div>
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">Invoice Management</h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Invoice Management</h2>
         <p className="text-gray-600">Total invoices: {invoices.length}</p>
       </div>
 

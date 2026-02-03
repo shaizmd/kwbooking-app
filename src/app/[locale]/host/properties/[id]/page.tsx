@@ -42,7 +42,7 @@ export default async function EditPropertyPage({
         </Link>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{property.title}</h1>
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">{property.title}</h1>
             <p className="text-gray-600">
               Property details and management
             </p>
@@ -80,7 +80,7 @@ export default async function EditPropertyPage({
               {/* Property Details Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-4 border-t border-gray-200">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary-DEFAULT">{property.bedrooms}</div>
+                  <div className="text-xl font-semibold text-primary-DEFAULT">{property.bedrooms}</div>
                   <div className="text-sm text-gray-600">Bedrooms</div>
                 </div>
                 <div className="text-center">
@@ -102,7 +102,7 @@ export default async function EditPropertyPage({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Base Price</label>
-                  <p className="price-text font-bold">{property.basePrice.toString()} KWD/night</p>
+                  <p className="price-text font-semibold">{property.basePrice.toString()} KWD/night</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Extra Guest Price</label>
@@ -137,7 +137,7 @@ export default async function EditPropertyPage({
                 <div className="pt-4 border-t border-gray-200">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">⭐</span>
-                    <span className="text-xl font-bold text-gray-900">{property.averageRating.toFixed(1)}</span>
+                    <span className="text-lg font-semibold text-gray-900">{property.averageRating.toFixed(1)}</span>
                     <span className="text-gray-600">({property.reviewCount} reviews)</span>
                   </div>
                 </div>
@@ -243,7 +243,7 @@ function StatusBadge({ status }: { status: string }) {
     DRAFT: "bg-gray-100 text-gray-800 border border-gray-300",
     ACTIVE: "bg-green-50 text-green-700 border border-green-200",
     INACTIVE: "bg-yellow-50 text-yellow-700 border border-yellow-200",
-    PENDING_APPROVAL: "bg-blue-50 text-blue-700 border border-blue-200",
+    PENDING_APPROVAL: "bg-yellow-50 text-yellow-700 border border-yellow-200",
   };
 
   return (

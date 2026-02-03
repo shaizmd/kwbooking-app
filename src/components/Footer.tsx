@@ -18,9 +18,9 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <Link href={`/${locale}`} className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: 'var(--red)' }}>
-                <span className="text-white font-bold text-lg">B</span>
+                <span className="text-white font-semibold text-lg">B</span>
               </div>
-              <span className="font-bold text-xl text-white">BookStay</span>
+              <span className="font-semibold text-xl text-white">BookStay</span>
             </Link>
             <p className="text-gray-400 mb-4 max-w-sm">
               {t("tagline")}

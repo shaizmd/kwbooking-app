@@ -40,7 +40,7 @@ export default async function PropertyImagesPage({
           </svg>
           Back to Property
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Manage Images</h1>
+        <h1 className="text-2xl font-semibold text-gray-900 mb-2">Manage Images</h1>
         <p className="text-gray-600">{property.title}</p>
       </div>
 
