@@ -1,9 +1,7 @@
 import { prisma } from "@/lib/db";
-import { redirect } from "next/navigation";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { verifyAccessToken } from "@/lib/auth/jwt";
+import { requireRole } from "@/lib/auth/require-role";
 import { getTranslations } from "next-intl/server";
 
 export default async function CustomerBookingsPage({
@@ -14,24 +12,8 @@ export default async function CustomerBookingsPage({
   const { locale } = await params;
   const t = await getTranslations("myBookings");
 
-  // Check authentication
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
-  
-  if (!token) {
-    redirect(`/${locale}/login?redirect=/bookings`);
-  }
-
-  let user;
-  try {
-    user = verifyAccessToken(token);
-  } catch {
-    redirect(`/${locale}/login?redirect=/bookings`);
-  }
-
-  if (user.role !== "CUSTOMER") {
-    redirect(`/${locale}`);
-  }
+  // Require CUSTOMER role
+  const user = await requireRole("CUSTOMER");
 
   // Get all bookings for customer
   const bookings = await prisma.booking.findMany({

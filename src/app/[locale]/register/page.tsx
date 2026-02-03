@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { register } from "@/lib/auth/client";
+import { register, getCurrentUser } from "@/lib/auth/client";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -12,7 +12,19 @@ export default function RegisterPage() {
   const locale = params?.locale as string || 'en';
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(true);
   const [selectedRole, setSelectedRole] = useState<"CUSTOMER" | "HOST">("CUSTOMER");
+
+  // Redirect if already logged in
+  useEffect(() => {
+    getCurrentUser()
+      .then((user) => {
+        if (user) {
+          router.push(`/${locale}`);
+        }
+      })
+      .finally(() => setChecking(false));
+  }, [router, locale]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,6 +46,15 @@ export default function RegisterPage() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // Show loading state while checking authentication
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600"></div>
+      </div>
+    );
   }
 
   return (

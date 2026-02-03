@@ -10,12 +10,22 @@ export async function createBooking({
   checkIn,
   checkOut,
   guests,
+  guestFullName,
+  guestEmail,
+  guestPhone,
+  arrivalTime,
+  specialRequests,
   locale,
 }: {
   propertyId: string;
   checkIn: string;
   checkOut: string;
   guests: number;
+  guestFullName: string;
+  guestEmail: string;
+  guestPhone?: string;
+  arrivalTime?: string;
+  specialRequests?: string;
   locale: string;
 }) {
   const user = await requireRole("CUSTOMER");
@@ -72,7 +82,7 @@ export async function createBooking({
       extraGuestPrice: Number(property.extraGuestPrice || 0),
     });
 
-    // 5. Create booking (PENDING)
+    // 5. Create booking (PENDING) with guest details
     return tx.booking.create({
       data: {
         propertyId,
@@ -80,6 +90,11 @@ export async function createBooking({
         checkIn: start,
         checkOut: end,
         guests,
+        guestFullName,
+        guestEmail,
+        guestPhone,
+        arrivalTime,
+        specialRequests,
         subtotal: pricing.subtotal,
         extraCharges: pricing.extraCharges,
         totalAmount: pricing.total,

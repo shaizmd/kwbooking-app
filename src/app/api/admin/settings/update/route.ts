@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { verifyToken } from "@/lib/auth/jwt";
+import { verifyAccessToken } from "@/lib/auth/jwt";
 
 export async function POST(request: NextRequest) {
   try {
     // Verify admin authentication
-    const accessToken = request.cookies.get("accessToken")?.value;
+    const accessToken = request.cookies.get("access_token")?.value;
     
     if (!accessToken) {
       return NextResponse.json(
@@ -14,9 +14,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload = verifyToken(accessToken);
+    const payload = verifyAccessToken(accessToken);
     
-    if (!payload || payload.role !== "ADMIN") {
+    if (payload.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Forbidden" },
         { status: 403 }

@@ -34,15 +34,17 @@ export function PropertyFilters({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5 mb-8">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="bg-white rounded-lg shadow-sm p-5 border border-gray-200 sticky top-4">
+      <h3 className="text-lg font-bold mb-4 text-gray-900">Filter by:</h3>
+      
+      <div className="space-y-6">
         {/* Property Type Filter */}
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>
+          <label className="block text-sm font-semibold mb-2 text-gray-700">
             Property Type
           </label>
           <select 
-            className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-red-500 transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             value={currentType || "all"}
             onChange={(e) => updateSearchParams("type", e.target.value)}
           >
@@ -55,59 +57,54 @@ export function PropertyFilters({
           </select>
         </div>
 
+        {/* Price Range */}
+        <div>
+          <label className="block text-sm font-semibold mb-3 text-gray-700">
+            Your budget (per night)
+          </label>
+          <div className="space-y-3">
+            <input
+              type="number"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              placeholder="Min price (KWD)"
+              defaultValue={currentMinPrice || ""}
+              onBlur={(e) => updateSearchParams("minPrice", e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  updateSearchParams("minPrice", e.currentTarget.value);
+                }
+              }}
+            />
+            <input
+              type="number"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              placeholder="Max price (KWD)"
+              defaultValue={currentMaxPrice || ""}
+              onBlur={(e) => updateSearchParams("maxPrice", e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  updateSearchParams("maxPrice", e.currentTarget.value);
+                }
+              }}
+            />
+          </div>
+        </div>
+
         {/* Sort Filter */}
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>
+          <label className="block text-sm font-semibold mb-2 text-gray-700">
             Sort By
           </label>
           <select 
-            className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-red-500 transition-colors"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
             value={currentSort || "featured"}
             onChange={(e) => updateSearchParams("sort", e.target.value)}
           >
-            <option value="featured">Featured</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="rating">Top Rated</option>
+            <option value="featured">Our top picks</option>
+            <option value="price-low">Price (lowest first)</option>
+            <option value="price-high">Price (highest first)</option>
+            <option value="rating">Top reviewed</option>
           </select>
-        </div>
-
-        {/* Min Price */}
-        <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>
-            Min Price (KWD)
-          </label>
-          <input
-            type="number"
-            className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-red-500 transition-colors"
-            placeholder="Min"
-            defaultValue={currentMinPrice || ""}
-            onBlur={(e) => updateSearchParams("minPrice", e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                updateSearchParams("minPrice", e.currentTarget.value);
-              }
-            }}
-          />
-        </div>
-
-        {/* Max Price */}
-        <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>
-            Max Price (KWD)
-          </label>
-          <input
-            type="number"
-            className="w-full px-4 py-2.5 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-red-500 transition-colors"
-            placeholder="Max"
-            defaultValue={currentMaxPrice || ""}
-            onBlur={(e) => updateSearchParams("maxPrice", e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                updateSearchParams("maxPrice", e.currentTarget.value);
-              }
-            }}
-          />
         </div>
       </div>
     </div>

@@ -5,13 +5,24 @@ import Link from "next/link";
 import { createBooking } from "./actions";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
+import Image from "next/image";
 
 export default async function BookingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{
+    checkIn?: string;
+    checkOut?: string;
+    guests?: string;
+    roomTypeId?: string | string[];
+    packageId?: string | string[];
+    quantity?: string | string[];
+  }>;
 }) {
   const { locale, id } = await params;
+  const searchParamsResolved = await searchParams;
 
   // Check if user is logged in and is a customer
   const cookieStore = await cookies();
@@ -21,15 +32,24 @@ export default async function BookingPage({
     redirect(`/${locale}/login?redirect=/properties/${id}/book`);
   }
 
-  let user;
+  let payload;
   try {
-    user = verifyAccessToken(token);
+    payload = verifyAccessToken(token);
   } catch {
     redirect(`/${locale}/login?redirect=/properties/${id}/book`);
   }
 
-  if (user.role !== "CUSTOMER") {
+  if (payload.role !== "CUSTOMER") {
     redirect(`/${locale}/properties/${id}`);
+  }
+
+  // Get user details
+  const user = await prisma.user.findUnique({
+    where: { id: payload.sub },
+  });
+
+  if (!user) {
+    redirect(`/${locale}/login`);
   }
 
   const property = await prisma.property.findFirst({
@@ -42,6 +62,20 @@ export default async function BookingPage({
         orderBy: { order: "asc" },
         take: 1,
       },
+      host: {
+        select: {
+          email: true,
+          fullName: true,
+        },
+      },
+      roomTypes: {
+        where: { isActive: true },
+        include: {
+          packages: {
+            where: { isActive: true },
+          },
+        },
+      },
     },
   });
 
@@ -51,6 +85,68 @@ export default async function BookingPage({
 
   const coverImage = property.images[0];
 
+  // Parse room selections from URL
+  const roomTypeIds = Array.isArray(searchParamsResolved.roomTypeId)
+    ? searchParamsResolved.roomTypeId
+    : searchParamsResolved.roomTypeId
+    ? [searchParamsResolved.roomTypeId]
+    : [];
+  const packageIds = Array.isArray(searchParamsResolved.packageId)
+    ? searchParamsResolved.packageId
+    : searchParamsResolved.packageId
+    ? [searchParamsResolved.packageId]
+    : [];
+  const quantities = Array.isArray(searchParamsResolved.quantity)
+    ? searchParamsResolved.quantity.map(Number)
+    : searchParamsResolved.quantity
+    ? [Number(searchParamsResolved.quantity)]
+    : [];
+
+  // Calculate booking details
+  const checkIn = searchParamsResolved.checkIn || "";
+  const checkOut = searchParamsResolved.checkOut || "";
+  const guests = Number(searchParamsResolved.guests) || property.baseGuests;
+
+  const checkInDate = checkIn ? new Date(checkIn) : null;
+  const checkOutDate = checkOut ? new Date(checkOut) : null;
+  const nights =
+    checkInDate && checkOutDate
+      ? Math.ceil(
+          (checkOutDate.getTime() - checkInDate.getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      : 1;
+
+  // Calculate total price from room selections
+  let subtotal = 0;
+  const selectedRooms: Array<{
+    roomType: any;
+    package: any;
+    quantity: number;
+    price: number;
+  }> = [];
+
+  roomTypeIds.forEach((roomTypeId, index) => {
+    const roomType = property.roomTypes.find((rt) => rt.id === roomTypeId);
+    const pkg = roomType?.packages.find((p) => p.id === packageIds[index]);
+    const quantity = quantities[index] || 1;
+
+    if (roomType && pkg) {
+      const price = Number(pkg.finalPrice) * nights * quantity;
+      subtotal += price;
+      selectedRooms.push({ roomType, package: pkg, quantity, price });
+    }
+  });
+
+  // Fallback to base price if no rooms selected
+  if (selectedRooms.length === 0) {
+    subtotal = Number(property.basePrice) * nights;
+  }
+
+  const taxRate = 0.05; // 5% tax
+  const taxAmount = subtotal * taxRate;
+  const totalAmount = subtotal + taxAmount;
+
   async function handleBooking(formData: FormData) {
     "use server";
 
@@ -59,6 +155,11 @@ export default async function BookingPage({
       checkIn: formData.get("checkIn") as string,
       checkOut: formData.get("checkOut") as string,
       guests: Number(formData.get("guests")),
+      guestFullName: formData.get("fullName") as string,
+      guestEmail: formData.get("email") as string,
+      guestPhone: (formData.get("phone") as string) || undefined,
+      arrivalTime: (formData.get("arrivalTime") as string) || undefined,
+      specialRequests: (formData.get("specialRequests") as string) || undefined,
       locale,
     });
   }
@@ -67,234 +168,419 @@ export default async function BookingPage({
   const today = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Back Button */}
-      <Link
-        href={`/${locale}/properties/${id}`}
-        className="inline-flex items-center text-gray-700 hover-red font-medium mb-6 transition-colors"
-      >
-        <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-        </svg>
-        Back to Property
-      </Link>
-
-      {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--text-dark)' }}>
-          Complete Your Booking
-        </h1>
-        <p style={{ color: 'var(--text-muted)' }}>
-          Review property details and confirm your reservation
-        </p>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <Link
+            href={`/${locale}/properties/${id}`}
+            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+          >
+            <svg
+              className="w-5 h-5 mr-1"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            Back to property
+          </Link>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Content - Booking Form */}
-        <div className="lg:col-span-2">
-          <form action={handleBooking} className="card">
-            <h2 className="text-2xl font-semibold mb-6" style={{ color: 'var(--text-dark)' }}>
-              Booking Details
-            </h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Enter your details
+          </h1>
+          <p className="text-gray-600">
+            We'll use this information to send your confirmation and updates about your booking
+          </p>
+        </div>
 
-            <div className="space-y-6">
-              {/* Check-in Date */}
-              <div>
-                <label htmlFor="checkIn" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
-                  Check-in Date
-                </label>
-                <input
-                  type="date"
-                  id="checkIn"
-                  name="checkIn"
-                  min={today}
-                  required
-                  className="w-full px-4 py-3 border rounded-lg transition-all"
-                  style={{ borderColor: 'var(--border-light)' }}
-                />
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2 space-y-6">
+            <form action={handleBooking}>
+              {/* Guest Details */}
+              <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-6">
+                  Enter your details
+                </h2>
 
-              {/* Check-out Date */}
-              <div>
-                <label htmlFor="checkOut" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
-                  Check-out Date
-                </label>
-                <input
-                  type="date"
-                  id="checkOut"
-                  name="checkOut"
-                  min={today}
-                  required
-                  className="w-full px-4 py-3 border rounded-lg transition-all"
-                  style={{ borderColor: 'var(--border-light)' }}
-                />
-              </div>
-
-              {/* Number of Guests */}
-              <div>
-                <label htmlFor="guests" className="block text-sm font-medium mb-2" style={{ color: 'var(--text-dark)' }}>
-                  Number of Guests
-                </label>
-                <input
-                  type="number"
-                  id="guests"
-                  name="guests"
-                  min="1"
-                  max={property.maxGuests}
-                  defaultValue={property.baseGuests}
-                  required
-                  className="w-full px-4 py-3 border rounded-lg transition-all"
-                  style={{ borderColor: 'var(--border-light)' }}
-                />
-                <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
-                  Maximum {property.maxGuests} guests allowed. Base price includes {property.baseGuests} guest{property.baseGuests > 1 ? 's' : ''}.
-                </p>
-                {property.extraGuestPrice && Number(property.extraGuestPrice) > 0 && (
-                  <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
-                    Extra guests: {formatCurrency(Number(property.extraGuestPrice), property.currency, locale)} per guest per night
-                  </p>
-                )}
-              </div>
-
-              {/* Important Information */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex gap-3">
-                  <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+                <div className="space-y-4">
+                  {/* Hidden fields */}
+                  <input type="hidden" name="checkIn" value={checkIn} />
+                  <input type="hidden" name="checkOut" value={checkOut} />
+                  <input type="hidden" name="guests" value={guests} />
+                  
+                  {/* Full Name */}
                   <div>
-                    <h4 className="font-semibold text-blue-900 mb-1">Booking Terms</h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      <li>• Minimum stay: 1 night</li>
-                      <li>• Your booking will be pending until confirmed by the host</li>
-                      <li>• Prices are locked at time of booking</li>
-                      <li>• Check cancellation policy before booking</li>
-                    </ul>
+                    <label
+                      htmlFor="fullName"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Full name *
+                    </label>
+                    <input
+                      type="text"
+                      id="fullName"
+                      name="fullName"
+                      required
+                      defaultValue={user.fullName || ""}
+                      placeholder="Enter your full name"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Enter your name as it appears on your ID
+                    </p>
                   </div>
+
+                  {/* Email */}
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Email address *
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      defaultValue={user.email}
+                      placeholder="example@email.com"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Confirmation email goes to this address
+                    </p>
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Phone number
+                    </label>
+                    <input
+                      type="tel"
+                      id="phone"
+                      name="phone"
+                      defaultValue={user.phone || ""}
+                      placeholder="+965 XXXX XXXX"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Needed by the property to validate your booking
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Arrival Time */}
+              <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  What time will you arrive?
+                </h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  {property.checkInTime
+                    ? `Check-in is from ${property.checkInTime}`
+                    : "Please select your approximate arrival time"}
+                </p>
+
+                <div>
+                  <label
+                    htmlFor="arrivalTime"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Arrival time
+                  </label>
+                  <select
+                    id="arrivalTime"
+                    name="arrivalTime"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select time (optional)</option>
+                    <option value="00:00 - 01:00">00:00 - 01:00</option>
+                    <option value="01:00 - 02:00">01:00 - 02:00</option>
+                    <option value="02:00 - 03:00">02:00 - 03:00</option>
+                    <option value="03:00 - 04:00">03:00 - 04:00</option>
+                    <option value="04:00 - 05:00">04:00 - 05:00</option>
+                    <option value="05:00 - 06:00">05:00 - 06:00</option>
+                    <option value="06:00 - 07:00">06:00 - 07:00</option>
+                    <option value="07:00 - 08:00">07:00 - 08:00</option>
+                    <option value="08:00 - 09:00">08:00 - 09:00</option>
+                    <option value="09:00 - 10:00">09:00 - 10:00</option>
+                    <option value="10:00 - 11:00">10:00 - 11:00</option>
+                    <option value="11:00 - 12:00">11:00 - 12:00</option>
+                    <option value="12:00 - 13:00">12:00 - 13:00</option>
+                    <option value="13:00 - 14:00">13:00 - 14:00</option>
+                    <option value="14:00 - 15:00" defaultValue="14:00 - 15:00">
+                      14:00 - 15:00
+                    </option>
+                    <option value="15:00 - 16:00">15:00 - 16:00</option>
+                    <option value="16:00 - 17:00">16:00 - 17:00</option>
+                    <option value="17:00 - 18:00">17:00 - 18:00</option>
+                    <option value="18:00 - 19:00">18:00 - 19:00</option>
+                    <option value="19:00 - 20:00">19:00 - 20:00</option>
+                    <option value="20:00 - 21:00">20:00 - 21:00</option>
+                    <option value="21:00 - 22:00">21:00 - 22:00</option>
+                    <option value="22:00 - 23:00">22:00 - 23:00</option>
+                    <option value="23:00 - 00:00">23:00 - 00:00</option>
+                    <option value="not-sure">I don&apos;t know yet</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Special Requests */}
+              <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Special requests
+                </h2>
+                <p className="text-sm text-gray-600 mb-4">
+                  Special requests can&apos;t be guaranteed, but the property will do
+                  its best to meet your needs. You can always make a special
+                  request after your booking is complete.
+                </p>
+
+                <div>
+                  <label
+                    htmlFor="specialRequests"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Please write your requests (optional)
+                  </label>
+                  <textarea
+                    id="specialRequests"
+                    name="specialRequests"
+                    rows={4}
+                    placeholder="E.g., quiet room, high floor, early check-in..."
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                  />
+                </div>
+              </div>
+
+              {/* Terms & Conditions */}
+              <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    name="terms"
+                    required
+                    className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                  />
+                  <label htmlFor="terms" className="text-sm text-gray-700">
+                    I agree to the{" "}
+                    <Link href="/terms" className="text-blue-600 hover:underline">
+                      terms and conditions
+                    </Link>{" "}
+                    and{" "}
+                    <Link href="/privacy" className="text-blue-600 hover:underline">
+                      privacy policy
+                    </Link>
+                    . By completing this booking, I understand that the host will
+                    be sharing my details with me to finalize arrangements.
+                  </label>
                 </div>
               </div>
 
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full btn-primary py-4 text-lg font-bold"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg"
               >
                 Confirm Booking
               </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Sidebar - Property Summary */}
-        <div className="space-y-6">
-          {/* Property Card */}
-          <div className="card sticky top-8">
-            <h3 className="text-xl font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>
-              Property Summary
-            </h3>
-
-            {/* Property Image */}
-            {coverImage && (
-              <div className="relative h-40 bg-gray-200 rounded-lg overflow-hidden mb-4">
-                <img
-                  src={coverImage.imageUrl}
-                  alt={property.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
-            {/* Property Details */}
-            <div className="space-y-3">
-              <div>
-                <h4 className="font-bold text-lg" style={{ color: 'var(--text-dark)' }}>
-                  {property.title}
-                </h4>
-                <div className="flex items-center gap-1 mt-1" style={{ color: 'var(--text-muted)' }}>
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span className="text-sm">{property.location}</span>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t" style={{ borderColor: 'var(--border-light)' }}>
-                <div className="flex items-baseline gap-2 mb-2">
-                  <span className="price-text font-bold text-2xl">
-                    {formatCurrency(
-                      Number(property.basePrice),
-                      property.currency,
-                      locale
-                    )}
-                  </span>
-                  <span style={{ color: 'var(--text-muted)' }}>/ night</span>
-                </div>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text-muted)' }}>Base guests</span>
-                    <span style={{ color: 'var(--text-dark)' }}>{property.baseGuests}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span style={{ color: 'var(--text-muted)' }}>Max guests</span>
-                    <span style={{ color: 'var(--text-dark)' }}>{property.maxGuests}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            </form>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="card">
-            <h3 className="font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>
-              Why book with us
-            </h3>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 125, 50, 0.1)' }}>
-                  <svg className="w-5 h-5" style={{ color: 'var(--green)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
+          {/* Booking Summary Sidebar */}
+          <div className="lg:sticky lg:top-4 lg:self-start">
+            <div className="bg-white rounded-lg border border-gray-300 p-6">
+              <h3 className="text-lg font-bold text-gray-900 mb-4">
+                Your booking details
+              </h3>
+
+              {/* Property Image */}
+              {coverImage && (
+                <div className="relative h-32 bg-gray-200 rounded-lg overflow-hidden mb-4">
+                  <Image
+                    src={coverImage.imageUrl}
+                    alt={property.title}
+                    fill
+                    className="object-cover"
+                    sizes="400px"
+                  />
                 </div>
+              )}
+
+              {/* Property Name */}
+              <h4 className="font-bold text-gray-900 mb-2">{property.title}</h4>
+              <div className="flex items-center gap-1 text-sm text-gray-600 mb-4">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                {property.location}
+              </div>
+
+              <div className="border-t border-gray-200 pt-4 space-y-3">
+                {/* Dates */}
                 <div>
-                  <p className="font-medium text-sm" style={{ color: 'var(--text-dark)' }}>
-                    Secure payments
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    Your payment is protected
+                  <div className="text-sm font-semibold text-gray-900 mb-1">
+                    Check-in
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    {checkInDate
+                      ? checkInDate.toLocaleDateString(locale, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "Not selected"}
+                  </div>
+                  {property.checkInTime && (
+                    <div className="text-xs text-gray-500">
+                      From {property.checkInTime}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 mb-1">
+                    Check-out
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    {checkOutDate
+                      ? checkOutDate.toLocaleDateString(locale, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })
+                      : "Not selected"}
+                  </div>
+                  {property.checkOutTime && (
+                    <div className="text-xs text-gray-500">
+                      Until {property.checkOutTime}
+                    </div>
+                  )}
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 mb-1">
+                    Total length of stay
+                  </div>
+                  <div className="text-sm text-gray-700">
+                    {nights} {nights === 1 ? "night" : "nights"}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="text-sm font-semibold text-gray-900 mb-1">
+                    Number of guests
+                  </div>
+                  <div className="text-sm text-gray-700">{guests} guests</div>
+                </div>
+
+                {/* Selected Rooms */}
+                {selectedRooms.length > 0 && (
+                  <div>
+                    <div className="text-sm font-semibold text-gray-900 mb-2">
+                      Your selection
+                    </div>
+                    {selectedRooms.map((room, idx) => (
+                      <div key={idx} className="text-sm text-gray-700 mb-2">
+                        <div className="font-medium">{room.roomType.name}</div>
+                        <div className="text-xs text-gray-600">
+                          {room.package.name} × {room.quantity}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="border-t border-gray-200 mt-4 pt-4 space-y-2">
+                <h4 className="font-bold text-gray-900 mb-3">Price details</h4>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-700">
+                    {nights} {nights === 1 ? "night" : "nights"}
+                  </span>
+                  <span className="text-gray-900 font-medium">
+                    {formatCurrency(subtotal, property.currency, locale)}
+                  </span>
+                </div>
+
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-700">Taxes and charges</span>
+                  <span className="text-gray-900 font-medium">
+                    {formatCurrency(taxAmount, property.currency, locale)}
+                  </span>
+                </div>
+
+                <div className="border-t border-gray-300 pt-2 mt-2">
+                  <div className="flex justify-between">
+                    <span className="font-bold text-gray-900">Total</span>
+                    <span className="font-bold text-lg text-gray-900">
+                      {formatCurrency(totalAmount, property.currency, locale)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Includes taxes and charges
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(46, 125, 50, 0.1)' }}>
-                  <svg className="w-5 h-5" style={{ color: 'var(--green)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              {/* Price Information */}
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-4">
+                <div className="flex gap-2">
+                  <svg
+                    className="w-5 h-5 text-green-600 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-sm" style={{ color: 'var(--text-dark)' }}>
-                    Transparent pricing
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    No hidden fees
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(211, 47, 47, 0.1)' }}>
-                  <svg className="w-5 h-5" style={{ color: 'var(--red)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-medium text-sm" style={{ color: 'var(--text-dark)' }}>
-                    24/7 support
-                  </p>
-                  <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
-                    We&apos;re here to help
+                  <p className="text-sm text-green-800">
+                    <strong>Great choice!</strong> You won&apos;t be charged yet – this
+                    booking is pending confirmation.
                   </p>
                 </div>
               </div>

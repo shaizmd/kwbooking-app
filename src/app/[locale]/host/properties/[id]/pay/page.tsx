@@ -1,12 +1,15 @@
 import { createPaymentIntent } from "./actions";
+import { requireRole } from "@/lib/auth/require-role";
 
 export default async function PayPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { clientSecret } =
-    await createPaymentIntent(params.id);
+  await requireRole("HOST");
+  const { id } = await params;
+  
+  const { clientSecret } = await createPaymentIntent(id);
 
   return (
     <div>

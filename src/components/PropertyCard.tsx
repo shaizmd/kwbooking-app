@@ -30,6 +30,7 @@ interface PropertyCardProps {
     currency: string;
     baseGuests: number;
     maxGuests: number;
+    extraGuestPrice?: number | null;
     bedrooms: number;
     bathrooms: number;
     beds: number;
@@ -46,173 +47,145 @@ interface PropertyCardProps {
   index?: number;
 }
 
-const getAmenityIcon = (icon: string) => {
-  const icons: { [key: string]: string } = {
-    wifi: "📶",
-    pool: "🏊",
-    parking: "🅿️",
-    ac: "❄️",
-    kitchen: "🍳",
-    elevator: "🛗",
-    gym: "💪",
-    spa: "🧖",
-    beach: "🏖️",
-    fireplace: "🔥",
-  };
-  return icons[icon] || "✓";
-};
-
 export function PropertyCard({ property, locale, index = 0 }: PropertyCardProps) {
   const coverImage = property.images[0];
   
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: index * 0.1 }}
+      transition={{ duration: 0.2, delay: index * 0.05 }}
     >
       <Link
         href={`/${locale}/properties/${property.id}`}
         className="block group"
       >
-        <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-          {/* Image Container */}
-          <div className="relative h-56 overflow-hidden">
-            {coverImage ? (
-              <Image
-                src={coverImage.imageUrl}
-                alt={property.title}
-                fill
-                className="object-cover group-hover:scale-110 transition-transform duration-500"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
-            ) : (
-              <div 
-                style={{ background: 'linear-gradient(135deg, rgba(211, 47, 47, 0.8), rgba(211, 47, 47, 0.5))' }} 
-                className="w-full h-full flex items-center justify-center"
-              >
-                <svg className="w-16 h-16 text-white opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-              </div>
-            )}
-            
-            {/* Badges */}
-            {property.featured && (
-              <div className="absolute top-3 right-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
-                Featured
-              </div>
-            )}
-            
-            {property.instantBooking && (
-              <div className="absolute top-3 left-3 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg flex items-center gap-1">
-                <span>⚡</span>
-                <span>Instant Book</span>
-              </div>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="p-5">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-2">
-              <span className="inline-block px-3 py-1 text-xs font-semibold rounded-lg" 
-                style={{ 
-                  background: 'rgba(211, 47, 47, 0.1)', 
-                  color: 'var(--red)' 
-                }}
-              >
-                {property.propertyType}
-              </span>
-              
-              {property.averageRating && property.averageRating > 0 && (
-                <div className="flex items-center gap-1">
-                  <span className="text-yellow-500">⭐</span>
-                  <span className="font-bold text-sm">{property.averageRating.toFixed(1)}</span>
-                  <span className="text-gray-400 text-xs">({property.reviewCount})</span>
+        <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200">
+          <div className="flex flex-col md:flex-row">
+            {/* Image Container - Left Side */}
+            <div className="relative md:w-80 h-64 md:h-auto shrink-0 overflow-hidden">
+              {coverImage ? (
+                <Image
+                  src={coverImage.imageUrl}
+                  alt={property.title}
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 320px"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                  <svg className="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
                 </div>
               )}
             </div>
 
-            {/* Title */}
-            <h3 className="text-lg font-bold mb-2 line-clamp-1 group-hover:text-red-600 transition-colors" 
-              style={{ color: 'var(--text-dark)' }}
-            >
-              {property.title}
-            </h3>
+            {/* Content - Right Side */}
+            <div className="flex-1 flex flex-col">
+              <div className="p-4 flex-1">
+                {/* Header with type and rating */}
+                <div className="flex items-start justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-semibold text-white bg-blue-800 px-2 py-1 rounded">
+                      {property.propertyType}
+                    </span>
+                    {property.featured && (
+                      <span className="text-xs font-semibold text-white bg-yellow-500 px-2 py-1 rounded">
+                        Featured
+                      </span>
+                    )}
+                  </div>
+                </div>
 
-            {/* Location */}
-            <div className="flex items-center gap-2 mb-3" style={{ color: 'var(--text-muted)' }}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              <span className="text-sm">{property.location}</span>
-            </div>
+                {/* Title */}
+                <h3 className="text-lg font-semibold mb-1 text-blue-800 group-hover:underline line-clamp-2">
+                  {property.title}
+                </h3>
 
-            {/* Property Details */}
-            <div className="flex items-center gap-4 mb-3 text-sm" style={{ color: 'var(--text-muted)' }}>
-              <div className="flex items-center gap-1">
-                <span>🛏️</span>
-                <span>{property.bedrooms} {property.bedrooms === 1 ? 'Bedroom' : 'Bedrooms'}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <span>🚿</span>
-                <span>{property.bathrooms} {property.bathrooms === 1 ? 'Bath' : 'Baths'}</span>
-              </div>
-            </div>
+                {/* Location */}
+                <div className="flex items-center gap-1 mb-3 text-sm text-gray-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{property.location}</span>
+                </div>
 
-            {/* Amenities */}
-            {property.amenities && property.amenities.length > 0 && (
-              <div className="flex items-center gap-2 mb-4 flex-wrap">
-                {property.amenities.slice(0, 4).map((amenity) => (
-                  <span 
-                    key={amenity.amenity.id}
-                    className="text-xs px-2 py-1 rounded-lg bg-gray-100 flex items-center gap-1"
-                    title={amenity.amenity.name}
-                  >
-                    <span>{getAmenityIcon(amenity.amenity.icon)}</span>
-                    <span className="text-gray-600">{amenity.amenity.name}</span>
-                  </span>
-                ))}
-                {property.amenities.length > 4 && (
-                  <span className="text-xs text-gray-500">
-                    +{property.amenities.length - 4} more
-                  </span>
+                {/* Property Details */}
+                <div className="flex items-center gap-3 mb-3 text-sm text-gray-700">
+                  <span>{property.bedrooms} bedroom{property.bedrooms !== 1 ? 's' : ''}</span>
+                  <span>•</span>
+                  <span>{property.bathrooms} bathroom{property.bathrooms !== 1 ? 's' : ''}</span>
+                  <span>•</span>
+                  <span>{property.baseGuests} guests</span>
+                </div>
+
+                {/* Amenities */}
+                {property.amenities && property.amenities.length > 0 && (
+                  <div className="flex items-center gap-2 flex-wrap text-xs text-gray-600 mb-3">
+                    {property.amenities.slice(0, 5).map((amenity, idx) => (
+                      <span key={amenity.amenity.id}>
+                        {amenity.amenity.name}{idx < Math.min(4, property.amenities!.length - 1) ? ' •' : ''}
+                      </span>
+                    ))}
+                    {property.amenities.length > 5 && (
+                      <span>+{property.amenities.length - 5} more</span>
+                    )}
+                  </div>
                 )}
-              </div>
-            )}
 
-            {/* Price & CTA */}
-            <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-              <div>
-                <div className="flex items-baseline gap-1">
-                  <span className="price-text font-bold text-2xl">
+                {/* Description preview */}
+                <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                  {property.description}
+                </p>
+
+                {/* Tags */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {property.instantBooking && (
+                    <span className="text-xs text-green-700 bg-green-50 px-2 py-1 rounded border border-green-200">
+                      Instant booking
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Price Section - Bottom aligned */}
+              <div className="p-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+                <div className="flex-1">
+                  {property.averageRating && property.averageRating > 0 && (
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="bg-blue-900 text-white px-2 py-1 rounded-t-lg rounded-br-lg text-xs font-bold">
+                        {property.averageRating.toFixed(1)}
+                      </div>
+                      <div className="text-sm">
+                        <span className="font-semibold text-gray-900">
+                          {property.averageRating >= 9 ? 'Superb' : 
+                           property.averageRating >= 8 ? 'Very good' : 
+                           property.averageRating >= 7 ? 'Good' : 'Pleasant'}
+                        </span>
+                        <span className="text-gray-600 ml-1">• {property.reviewCount} reviews</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="text-right">
+                  <div className="text-sm text-gray-600 mb-1">1 night</div>
+                  <div className="text-2xl font-bold text-gray-900">
                     {formatCurrency(
                       Number(property.basePrice),
                       property.currency,
                       locale
                     )}
-                  </span>
-                  <span className="text-sm" style={{ color: 'var(--text-muted)' }}>
-                    /night
-                  </span>
+                  </div>
+                  {property.extraGuestPrice && (
+                    <div className="text-xs text-gray-500 mt-1">
+                      +{formatCurrency(Number(property.extraGuestPrice), property.currency, locale)}/extra guest
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                  For {property.baseGuests} {property.baseGuests === 1 ? 'guest' : 'guests'}
-                  {property.maxGuests > property.baseGuests && ` • Max ${property.maxGuests}`}
-                </p>
               </div>
-              
-              <button 
-                className="px-4 py-2 rounded-lg text-sm font-semibold transition-all text-white"
-                style={{ 
-                  background: 'var(--red)',
-                  boxShadow: '0 2px 8px rgba(211, 47, 47, 0.2)'
-                }}
-              >
-                View Details
-              </button>
             </div>
           </div>
         </div>

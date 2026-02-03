@@ -67,57 +67,67 @@ export default async function PublicPropertiesPage({
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-3" style={{ color: 'var(--text-dark)' }}>
+    <div className="min-h-screen bg-gray-100">
+      {/* Header Section */}
+      <div className="bg-blue-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <h1 className="text-2xl font-bold mb-2">
             {t("title")}
           </h1>
-          <p className="text-lg" style={{ color: 'var(--text-muted)' }}>
-            {properties.length} {properties.length === 1 ? 'property' : 'properties'} available
+          <p className="text-blue-100 text-sm">
+            {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
           </p>
         </div>
+      </div>
 
-        {/* Filters & Sorting */}
-        <PropertyFilters
-          propertyTypes={propertyTypes.map((pt) => pt.propertyType)}
-          currentType={type}
-          currentSort={sort}
-          currentMinPrice={minPrice}
-          currentMaxPrice={maxPrice}
-        />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar Filters */}
+          <div className="lg:w-80 shrink-0">
+            <PropertyFilters
+              propertyTypes={propertyTypes.map((pt) => pt.propertyType)}
+              currentType={type}
+              currentSort={sort}
+              currentMinPrice={minPrice}
+              currentMaxPrice={maxPrice}
+            />
+          </div>
 
-        {/* Properties Grid */}
-        {properties.length === 0 ? (
-          <div className="card text-center" style={{ padding: '48px' }}>
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'rgba(211, 47, 47, 0.1)' }}>
-              <svg className="w-8 h-8" style={{ color: 'var(--red)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold mb-2" style={{ color: 'var(--text-dark)' }}>
-              {t("noProperties")}
-            </h3>
-            <p style={{ color: 'var(--text-muted)' }}>
-              {t("noPropertiesDesc")}
-            </p>
+          {/* Properties List */}
+          <div className="flex-1">
+            {properties.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">
+                  {t("noProperties")}
+                </h3>
+                <p className="text-gray-600">
+                  {t("noPropertiesDesc")}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {properties.map((property, index) => (
+                  <PropertyCard 
+                    key={property.id}
+                    property={{
+                      ...property,
+                      basePrice: Number(property.basePrice),
+                      extraGuestPrice: property.extraGuestPrice ? Number(property.extraGuestPrice) : null,
+                      averageRating: property.averageRating ? Number(property.averageRating) : null,
+                    }}
+                    locale={locale}
+                    index={index}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {properties.map((property, index) => (
-              <PropertyCard 
-                key={property.id}
-                property={{
-                  ...property,
-                  basePrice: Number(property.basePrice),
-                }}
-                locale={locale}
-                index={index}
-              />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

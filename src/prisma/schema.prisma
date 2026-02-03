@@ -117,8 +117,22 @@ model Property {
 
   location         String
   locationAr       String?        // Arabic location name
+  address          String?        // Full street address
+  addressAr        String?        // Arabic address
+  city             String?        // City name
+  cityAr           String?        // Arabic city name
+  district         String?        // District/neighborhood
+  districtAr       String?        // Arabic district
+  postalCode       String?        // Postal/ZIP code
+  country          String         @default("Kuwait")
+  countryCode      String         @default("KW") // ISO country code
   latitude         Float?
   longitude        Float?
+  
+  // Nearby landmarks (booking.com style)
+  distanceToCenter Float?         // km to city center
+  nearestAirport   String?        // e.g., "Kuwait International Airport"
+  airportDistance  Float?         // km to airport
 
   // Pricing
   basePrice        Decimal        // Store in smallest unit (fils for KWD)
@@ -164,6 +178,7 @@ model Property {
   amenities        PropertyAmenity[]
   reviews          Review[]
   blockedDates     BlockedDate[]
+  roomTypes        RoomType[]
 
   @@index([hostId])
   @@index([status])
@@ -185,6 +200,85 @@ model PropertyImage {
 }
 
 // ==========================
+// ROOM TYPES & PACKAGES (Booking.com style)
+// ==========================
+
+model RoomType {
+  id          String   @id @default(uuid())
+  propertyId  String
+  
+  name        String   // e.g., "Deluxe Room", "Standard Studio"
+  nameAr      String?
+  description String?  @db.Text
+  
+  // Room specifications
+  bedType     String   // e.g., "1 double bed", "2 single beds", "1 king bed"
+  bedCount    Int      @default(1)
+  roomSize    Int?     // Square meters
+  maxGuests   Int      @default(2)
+  
+  // Base pricing (can be overridden by packages)
+  basePrice   Decimal
+  
+  // Room features/amenities (JSON array of amenity IDs or names)
+  features    String?  @db.Text // JSON: ["Air conditioning", "Private bathroom", "Flat-screen TV"]
+  
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  property    Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  packages    RoomPackage[]
+  bookings    Booking[]
+  
+  @@index([propertyId])
+  @@index([isActive])
+}
+
+model RoomPackage {
+  id              String   @id @default(uuid())
+  roomTypeId      String
+  
+  name            String   // e.g., "Best Deal", "Free Cancellation", "Non-refundable"
+  nameAr          String?
+  
+  // Pricing
+  originalPrice   Decimal? // Struck-through price for showing discounts
+  finalPrice      Decimal  // Actual price customer pays
+  discountPercent Int?     // e.g., 53 for "53% off"
+  
+  // Deal badges
+  isLimitedTime   Boolean  @default(false)
+  dealLabel       String?  // e.g., "Limited-time Deal", "Early Bird"
+  
+  // Cancellation policy
+  freeCancellation         Boolean  @default(false)
+  cancellationDeadline     Int?     // Hours before check-in
+  cancellationDeadlineText String?  // e.g., "before 11 February 2026"
+  isRefundable            Boolean  @default(true)
+  
+  // Payment options
+  prepaymentRequired Boolean  @default(false) // "Pay before arrival"
+  noCreditCard       Boolean  @default(false) // "No credit card needed"
+  
+  // Benefits/Inclusions (JSON array)
+  benefits    String?  @db.Text // JSON: ["10% off food/drink", "parking", "late check-in", "high-speed internet"]
+  
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0) // Display order
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  roomType    RoomType @relation(fields: [roomTypeId], references: [id], onDelete: Cascade)
+  bookings    Booking[]
+  
+  @@index([roomTypeId])
+  @@index([isActive])
+}
+
+// ==========================
 // BOOKING
 // ==========================
 
@@ -192,10 +286,25 @@ model Booking {
   id            String        @id @default(uuid())
   propertyId    String
   customerId    String
+  roomTypeId    String?       // Link to room type
+  packageId     String?       // Link to selected package
 
   checkIn       DateTime
   checkOut      DateTime
   guests        Int
+  roomCount     Int           @default(1) // Number of rooms booked
+
+  // Guest Details (booking.com style)
+  guestFullName String        // Primary guest name
+  guestEmail    String        // Contact email
+  guestPhone    String?       // Contact phone
+  
+  // Arrival & Preferences
+  arrivalTime   String?       // Expected arrival time
+  specialRequests String?     @db.Text // Special requests from guest
+  
+  // Purpose of visit (optional)
+  visitPurpose  String?       // "business", "leisure", etc.
 
   subtotal      Decimal
   extraCharges  Decimal       @default(0)
@@ -214,12 +323,16 @@ model Booking {
 
   property      Property      @relation(fields: [propertyId], references: [id])
   customer      User          @relation(fields: [customerId], references: [id])
+  roomType      RoomType?     @relation(fields: [roomTypeId], references: [id])
+  package       RoomPackage?  @relation(fields: [packageId], references: [id])
   payment       Payment?
   invoice       Invoice?
   review        Review?
 
   @@index([propertyId])
   @@index([customerId])
+  @@index([roomTypeId])
+  @@index([packageId])
   @@index([status])
   @@index([checkIn, checkOut]) // For availability queries
   @@index([createdAt]) // For auto-cancel cron job
