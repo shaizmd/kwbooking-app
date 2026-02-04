@@ -3,6 +3,8 @@ import { getTranslations } from "next-intl/server";
 import { PropertyCard } from "@/components/PropertyCard";
 import { PropertyFilters } from "@/components/PropertyFilters";
 import { Prisma } from "@prisma/client";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth/jwt";
 
 export default async function PublicPropertiesPage({
   params,
@@ -14,6 +16,29 @@ export default async function PublicPropertiesPage({
   const { locale } = await params;
   const { type, sort, minPrice, maxPrice } = await searchParams;
   const t = await getTranslations("properties");
+
+  // Check if user is logged in
+  let userId: string | null = null;
+  let wishlistPropertyIds: string[] = [];
+  
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+  
+  if (token) {
+    try {
+      const payload = verifyAccessToken(token);
+      userId = payload.sub;
+      
+      // Get user's wishlist
+      const wishlist = await prisma.wishlist.findMany({
+        where: { userId },
+        select: { propertyId: true },
+      });
+      wishlistPropertyIds = wishlist.map(w => w.propertyId);
+    } catch {
+      // Invalid token, user not logged in
+    }
+  }
 
   // Build filter conditions
   const whereClause: Prisma.PropertyWhereInput = {
@@ -122,6 +147,8 @@ export default async function PublicPropertiesPage({
                     }}
                     locale={locale}
                     index={index}
+                    userId={userId}
+                    isInWishlist={wishlistPropertyIds.includes(property.id)}
                   />
                 ))}
               </div>

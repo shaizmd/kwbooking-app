@@ -371,6 +371,115 @@ async function main() {
 
   console.log(`✅ Linked amenities to properties`);
 
+  // 6. Create Room Types and Packages
+  console.log("🛏️ Creating room types and packages...");
+
+  // Room types for property1 (Luxury Beach Villa)
+  const deluxeRoom = await prisma.roomType.create({
+    data: {
+      propertyId: property1.id,
+      name: "Deluxe Ocean View Room",
+      nameAr: "غرفة ديلوكس بإطلالة على المحيط",
+      description: "Spacious room with king-size bed and stunning ocean views",
+      bedType: "1 King Bed",
+      bedCount: 1,
+      roomSize: 35,
+      maxGuests: 2,
+      basePrice: 80.0,
+      features: JSON.stringify([
+        "Ocean view",
+        "Private balcony",
+        "Air conditioning",
+        "Flat-screen TV",
+        "Mini bar",
+        "Private bathroom"
+      ]),
+      isActive: true,
+    },
+  });
+
+  // Packages for Deluxe Room
+  await prisma.roomPackage.createMany({
+    data: [
+      {
+        roomTypeId: deluxeRoom.id,
+        name: "Best Deal",
+        nameAr: "أفضل صفقة",
+        originalPrice: 100.0,
+        finalPrice: 80.0,
+        discountPercent: 20,
+        isLimitedTime: true,
+        dealLabel: "Limited-time Deal",
+        freeCancellation: true,
+        cancellationDeadline: 48,
+        cancellationDeadlineText: "before 2 days",
+        isRefundable: true,
+        prepaymentRequired: false,
+        noCreditCard: true,
+        benefits: JSON.stringify(["Free WiFi", "Breakfast included", "Late check-out"]),
+        isActive: true,
+        sortOrder: 1,
+      },
+      {
+        roomTypeId: deluxeRoom.id,
+        name: "Non-refundable Rate",
+        nameAr: "سعر غير قابل للاسترداد",
+        finalPrice: 70.0,
+        freeCancellation: false,
+        isRefundable: false,
+        prepaymentRequired: true,
+        noCreditCard: false,
+        benefits: JSON.stringify(["Free WiFi", "10% off spa services"]),
+        isActive: true,
+        sortOrder: 2,
+      },
+    ],
+  });
+
+  // Room type for property2 (Modern Apartment)
+  const standardApt = await prisma.roomType.create({
+    data: {
+      propertyId: property2.id,
+      name: "Two-Bedroom Apartment",
+      nameAr: "شقة بغرفتي نوم",
+      description: "Modern 2-bedroom apartment with full kitchen",
+      bedType: "2 Double Beds",
+      bedCount: 2,
+      roomSize: 120,
+      maxGuests: 4,
+      basePrice: 80.0,
+      features: JSON.stringify([
+        "Full kitchen",
+        "Living room",
+        "2 bathrooms",
+        "Washing machine",
+        "WiFi",
+        "City view"
+      ]),
+      isActive: true,
+    },
+  });
+
+  await prisma.roomPackage.create({
+    data: {
+      roomTypeId: standardApt.id,
+      name: "Standard Rate",
+      nameAr: "السعر القياسي",
+      finalPrice: 80.0,
+      freeCancellation: true,
+      cancellationDeadline: 24,
+      cancellationDeadlineText: "before 1 day",
+      isRefundable: true,
+      prepaymentRequired: false,
+      noCreditCard: false,
+      benefits: JSON.stringify(["Free WiFi", "Free parking"]),
+      isActive: true,
+      sortOrder: 1,
+    },
+  });
+
+  console.log(`✅ Created room types and packages`);
+
   // 7. Create Bookings (various states)
   console.log("📅 Creating bookings...");
 

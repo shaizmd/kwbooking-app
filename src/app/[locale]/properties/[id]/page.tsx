@@ -7,6 +7,10 @@ import { getTranslations } from "next-intl/server";
 import { ReactNode } from "react";
 import PropertyMap from "@/components/PropertyMap";
 import RoomSelection from "@/components/RoomSelection";
+import DateRangePicker from "@/components/DateRangePicker";
+import WishlistButton from "@/components/WishlistButton";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth/jwt";
 
 // Amenity icon mapping (booking.com style)
 const getAmenityIcon = (iconName: string): ReactNode => {
@@ -85,6 +89,28 @@ export default async function PropertyDetailsPage({
   const { locale, id } = await params;
   const { checkIn, checkOut, guests } = await searchParams;
   const t = await getTranslations("propertyDetails");
+
+  // Check if user is logged in
+  let userId: string | null = null;
+  let isInWishlist = false;
+  
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+  
+  if (token) {
+    try {
+      const payload = verifyAccessToken(token);
+      userId = payload.sub;
+      
+      // Check if property is in wishlist
+      const wishlistItem = await prisma.wishlist.findFirst({
+        where: { userId, propertyId: id },
+      });
+      isInWishlist = !!wishlistItem;
+    } catch {
+      // Invalid token
+    }
+  }
 
 
   const property = await prisma.property.findFirst({
@@ -172,41 +198,50 @@ export default async function PropertyDetailsPage({
         {/* Property Title & Location */}
         <div className="mb-4">
           <div className="flex items-start justify-between gap-4 mb-3">
-            <div>
+            <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-2xl font-semibold text-gray-900">
+                <h1 className="text-3xl font-bold text-gray-900">
                   {property.title}
                 </h1>
                 {property.featured && (
-                  <span className="px-3 py-1 bg-yellow-100 text-yellow-800 text-xs font-semibold rounded-md">
-                    Featured
+                  <span className="px-3 py-1.5 bg-blue-600 text-white text-sm font-bold rounded shadow-sm">
+                    ⭐ Featured Property
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-1 text-gray-700">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>{property.location}</span>
-                </div>
-                {property.averageRating && property.averageRating > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1 text-white px-2 py-1 rounded-lg font-semibold" style={{ backgroundColor: 'var(--red)' }}>
-                      <span className="text-sm">{property.averageRating.toFixed(1)}</span>
-                    </div>
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900">
-                        {property.averageRating >= 9 ? 'Superb' : 
-                         property.averageRating >= 8 ? 'Very good' : 
-                         property.averageRating >= 7 ? 'Good' : 'Pleasant'}
-                      </div>
-                      <div className="text-xs text-gray-600">{property.reviewCount} reviews</div>
-                    </div>
+            </div>
+            {userId && (
+              <WishlistButton
+                propertyId={property.id}
+                locale={locale}
+                isInWishlist={isInWishlist}
+              />
+            )}
+          </div>
+          <div className="flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-4">
+              <a href="#map" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium underline">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span className="font-semibold">{property.location}</span> — Show on map
+              </a>
+              {property.averageRating && property.averageRating > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 text-white px-3 py-2 rounded-lg font-bold" style={{ backgroundColor: 'var(--red)' }}>
+                    <span className="text-base">{property.averageRating.toFixed(1)}</span>
                   </div>
-                )}
-              </div>
+                  <div>
+                    <div className="text-sm font-bold text-gray-900">
+                      {property.averageRating >= 9 ? 'Superb' : 
+                       property.averageRating >= 8 ? 'Very good' : 
+                       property.averageRating >= 7 ? 'Good' : 'Pleasant'}
+                    </div>
+                    <div className="text-xs text-gray-600 font-semibold">{property.reviewCount} reviews</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -261,47 +296,47 @@ export default async function PropertyDetailsPage({
           {/* Left Column - Main Content */}
           <div className="lg:col-span-2 space-y-6">
             
-            {/* Key Information Box */}
-            <div className="border border-gray-300 rounded-lg p-6 bg-gray-50">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Key Information Box - Booking.com Style */}
+            <div className="border border-gray-200 rounded-lg p-6 bg-blue-50">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2 text-gray-700 mb-1">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <span className="text-sm font-medium">Property</span>
+                    <span className="text-sm font-semibold">Property</span>
                   </div>
-                  <span className="text-lg font-semibold text-gray-900">{property.propertyType}</span>
+                  <span className="text-lg font-bold text-gray-900">{property.propertyType}</span>
                 </div>
                 
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2 text-gray-700 mb-1">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
-                    <span className="text-sm font-medium">Guests</span>
+                    <span className="text-sm font-semibold">Guests</span>
                   </div>
-                  <span className="text-lg font-semibold text-gray-900">Up to {property.maxGuests}</span>
+                  <span className="text-lg font-bold text-gray-900">Up to {property.maxGuests}</span>
                 </div>
                 
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2 text-gray-700 mb-1">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                     </svg>
-                    <span className="text-sm font-medium">Bedrooms</span>
+                    <span className="text-sm font-semibold">Bedrooms</span>
                   </div>
-                  <span className="text-lg font-semibold text-gray-900">{property.bedrooms}</span>
+                  <span className="text-lg font-bold text-gray-900">{property.bedrooms}</span>
                 </div>
                 
                 <div className="flex flex-col">
-                  <div className="flex items-center gap-2 text-gray-700 mb-1">
+                  <div className="flex items-center gap-2 text-gray-600 mb-1">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
-                    <span className="text-sm font-medium">Bathrooms</span>
+                    <span className="text-sm font-semibold">Bathrooms</span>
                   </div>
-                  <span className="text-lg font-semibold text-gray-900">{property.bathrooms}</span>
+                  <span className="text-lg font-bold text-gray-900">{property.bathrooms}</span>
                 </div>
               </div>
             </div>
@@ -309,19 +344,18 @@ export default async function PropertyDetailsPage({
             {/* Most Popular Facilities - Booking.com Style */}
             {property.amenities && property.amenities.length > 0 && (
               <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Most popular facilities</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                  {property.amenities.slice(0, 10).map((amenity) => (
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Most popular facilities</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">\n                  {property.amenities.slice(0, 10).map((amenity) => (
                     <div key={amenity.id} className="flex items-center gap-3">
                       <div className="text-green-700 flex-shrink-0">
                         {getAmenityIcon(amenity.amenity.icon)}
                       </div>
-                      <span className="text-gray-900">{amenity.amenity.name}</span>
+                      <span className="text-gray-900 font-medium">{amenity.amenity.name}</span>
                     </div>
                   ))}
                 </div>
                 {property.amenities.length > 10 && (
-                  <button className="mt-4 font-semibold text-sm transition-colors" style={{ color: 'var(--red)' }}>
+                  <button className="mt-4 font-bold text-sm transition-colors hover:underline" style={{ color: 'var(--red)' }}>
                     Show all {property.amenities.length} facilities →
                   </button>
                 )}
@@ -330,15 +364,15 @@ export default async function PropertyDetailsPage({
 
             {/* Property Description */}
             <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">About this property</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">About this property</h2>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-base">
                 {property.description}
               </p>
             </div>
 
             {/* Room Details */}
             <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Property highlights</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Property highlights</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-gray-900 font-semibold mb-1">{property.bedrooms}</div>
@@ -380,7 +414,7 @@ export default async function PropertyDetailsPage({
             {/* Check-in/Check-out */}
             {property.checkInTime && property.checkOutTime && (
               <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">Check-in & Check-out</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Check-in & Check-out</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -411,7 +445,12 @@ export default async function PropertyDetailsPage({
 
             {/* Location on Map Section */}
             {property.latitude && property.longitude && (
-              <div className="border border-gray-200 rounded-lg p-6 bg-white">
+              <div id="map" className="border border-gray-200 rounded-lg p-6 bg-white">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Where you'll be</h2>
+                <div className="mb-3">
+                  <p className="text-gray-700 font-semibold">{property.address}</p>
+                  <p className="text-gray-600">{property.city}, {property.district}</p>
+                </div>
                 <PropertyMap
                   latitude={Number(property.latitude)}
                   longitude={Number(property.longitude)}
@@ -461,7 +500,15 @@ export default async function PropertyDetailsPage({
         {/* Room Selection Section - Booking.com style */}
         {formattedRoomTypes.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Availability</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">Availability</h2>
+            
+            {/* Date Range Picker */}
+            <DateRangePicker 
+              propertyId={property.id} 
+              locale={locale} 
+              maxGuests={property.maxGuests}
+            />
+            
             <RoomSelection
               roomTypes={formattedRoomTypes}
               currency={property.currency}
@@ -476,20 +523,24 @@ export default async function PropertyDetailsPage({
 
         {/* Fallback for properties without room types */}
         {formattedRoomTypes.length === 0 && (
-          <div className="mt-12 border-2 rounded-lg p-8 text-center" style={{ borderColor: 'var(--red)' }}>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">Book this property</h3>
-            <div className="mb-6">
-              <div className="text-4xl font-bold text-gray-900 mb-2">
-                {formatCurrency(Number(property.basePrice), property.currency, locale)}
+          <div className="mt-12 bg-blue-50 border-2 rounded-lg p-6 shadow-sm" style={{ borderColor: 'var(--red)' }}>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Book this property</h3>
+                <div className="flex items-baseline gap-2">
+                  <div className="text-3xl font-bold text-gray-900">
+                    {formatCurrency(Number(property.basePrice), property.currency, locale)}
+                  </div>
+                  <div className="text-sm text-gray-600 font-semibold">per night</div>
+                </div>
               </div>
-              <div className="text-gray-600">per night</div>
+              <Link
+                href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}` : ''}`}
+                className="btn-primary text-base px-8 py-3 inline-block whitespace-nowrap font-bold"
+              >
+                Reserve now
+              </Link>
             </div>
-            <Link
-              href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}` : ''}`}
-              className="btn-primary text-lg px-8 py-4 inline-block"
-            >
-              Reserve now
-            </Link>
           </div>
         )}
       </div>

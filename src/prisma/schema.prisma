@@ -79,6 +79,7 @@ model User {
   subscriptions Subscription[]
   auditLogs     AuditLog[]
   reviews       Review[]
+  wishlist      Wishlist[]
 }
 
 // Tracks login sessions (refresh tokens)
@@ -179,6 +180,7 @@ model Property {
   reviews          Review[]
   blockedDates     BlockedDate[]
   roomTypes        RoomType[]
+  wishlist         Wishlist[]
 
   @@index([hostId])
   @@index([status])
@@ -479,6 +481,25 @@ model BlockedDate {
 
   @@index([propertyId])
   @@index([startDate, endDate])
+}
+
+// ==========================
+// WISHLIST
+// ==========================
+
+model Wishlist {
+  id         String   @id @default(uuid())
+  userId     String
+  propertyId String
+
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
 }
 
 // ==========================

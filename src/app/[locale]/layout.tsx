@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { locales, localeDirection, type Locale } from "@/config/locales";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import ToastProvider from "@/components/ToastProvider";
 import "../globals.css";
+import "../date-picker.css";
 
 export default async function LocaleLayout({
   children,
@@ -33,6 +35,7 @@ export default async function LocaleLayout({
           <Navigation />
           <main className="flex-1">{children}</main>
           <Footer />
+          <ToastProvider />
         </NextIntlClientProvider>
       </body>
     </html>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { formatCurrency } from "@/lib/format";
 import { motion } from "framer-motion";
+import WishlistButton from "./WishlistButton";
 
 interface PropertyImage {
   id: string;
@@ -45,9 +46,11 @@ interface PropertyCardProps {
   };
   locale: string;
   index?: number;
+  userId?: string | null;
+  isInWishlist?: boolean;
 }
 
-export function PropertyCard({ property, locale, index = 0 }: PropertyCardProps) {
+export function PropertyCard({ property, locale, index = 0, userId, isInWishlist = false }: PropertyCardProps) {
   const coverImage = property.images[0];
   
   return (
@@ -64,6 +67,13 @@ export function PropertyCard({ property, locale, index = 0 }: PropertyCardProps)
           <div className="flex flex-col md:flex-row">
             {/* Image Container - Left Side */}
             <div className="relative md:w-80 h-64 md:h-auto shrink-0 overflow-hidden">
+              {userId && (
+                <WishlistButton
+                  propertyId={property.id}
+                  locale={locale}
+                  isInWishlist={isInWishlist}
+                />
+              )}
               {coverImage ? (
                 <Image
                   src={coverImage.imageUrl}

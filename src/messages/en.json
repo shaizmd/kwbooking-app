@@ -84,6 +84,12 @@
     "upTo": "Up to",
     "guests": "guests"
   },
+  "wishlist": {
+    "title": "My Wishlist"
+  },
+  "profile": {
+    "title": "My Account"
+  },
   "propertyDetails": {
     "about": "About this property",
     "amenities": "Amenities",

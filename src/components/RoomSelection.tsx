@@ -181,25 +181,25 @@ export default function RoomSelection({
                   <div className="col-span-2">
                     <div className="space-y-1">
                       {pkg.originalPrice && (
-                        <div className="text-sm text-gray-500 line-through">
+                        <div className="text-sm text-gray-500 line-through font-semibold">
                           {formatCurrency(pkg.originalPrice, currency, locale)}
                         </div>
                       )}
-                      <div className="text-lg font-semibold text-gray-900">
+                      <div className="text-xl font-bold text-gray-900">
                         {formatCurrency(pkg.finalPrice, currency, locale)}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-600 font-medium">
                         +{formatCurrency(pkg.finalPrice * 0.05, currency, locale)} taxes
                         and charges
                       </div>
                       {pkg.discountPercent && (
-                        <div className="inline-block px-2 py-1 bg-green-700 text-white text-xs font-semibold rounded">
+                        <div className="inline-block px-2.5 py-1 bg-green-700 text-white text-xs font-bold rounded shadow-sm">
                           {pkg.discountPercent}% off
                         </div>
                       )}
                       {pkg.isLimitedTime && pkg.dealLabel && (
-                        <div className="inline-block px-2 py-1 bg-green-700 text-white text-xs font-semibold rounded mt-1">
-                          {pkg.dealLabel}
+                        <div className="inline-block px-2.5 py-1 bg-red-600 text-white text-xs font-bold rounded shadow-sm mt-1">
+                          ⚡ {pkg.dealLabel}
                         </div>
                       )}
                     </div>
@@ -223,7 +223,7 @@ export default function RoomSelection({
                               d="M5 13l4 4L19 7"
                             />
                           </svg>
-                          <span className="text-sm text-green-700 font-medium">
+                          <span className="text-sm text-green-700 font-semibold">
                             {benefit}
                           </span>
                         </div>
@@ -244,7 +244,7 @@ export default function RoomSelection({
                             />
                           </svg>
                           <span className="text-sm text-green-700">
-                            <strong>Free cancellation</strong>{" "}
+                            <strong className="font-bold">Free cancellation</strong>{" "}
                             {pkg.cancellationDeadlineText && (
                               <span className="font-normal">
                                 {pkg.cancellationDeadlineText}
@@ -387,11 +387,11 @@ export default function RoomSelection({
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-lg z-50">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div>
-              <div className="text-sm text-gray-600">Total price</div>
-              <div className="text-2xl font-semibold text-gray-900">
+              <div className="text-sm text-gray-600 font-semibold">Total price for {nights} {nights === 1 ? 'night' : 'nights'}</div>
+              <div className="text-3xl font-bold text-gray-900">
                 {formatCurrency(calculateTotal(), currency, locale)}
               </div>
-              <div className="text-xs text-gray-500">
+              <div className="text-xs text-gray-600 font-medium">
                 +{formatCurrency(calculateTotal() * 0.05, currency, locale)} taxes and
                 charges
               </div>

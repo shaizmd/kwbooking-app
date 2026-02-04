@@ -84,6 +84,12 @@
     "upTo": "حتى",
     "guests": "ضيوف"
   },
+  "wishlist": {
+    "title": "قائمة الرغبات"
+  },
+  "profile": {
+    "title": "حسابي"
+  },
   "propertyDetails": {
     "about": "عن هذا العقار",
     "amenities": "المرافق",
