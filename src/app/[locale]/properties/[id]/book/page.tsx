@@ -397,9 +397,18 @@ export default async function BookingPage({
               </div>
 
               {/* Submit Button */}
+              {!checkIn || !checkOut ? (
+                <div className="text-sm text-red-600">
+                  Please select check-in and check-out dates before confirming your booking.
+                </div>
+              ) : null}
+
               <button
                 type="submit"
-                className="w-full text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg" style={{ backgroundColor: 'var(--red)' }}
+                disabled={!checkIn || !checkOut}
+                className={`w-full text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg ${!checkIn || !checkOut ? 'opacity-50 cursor-not-allowed' : ''}`}
+                style={{ backgroundColor: 'var(--red)' }}
+                title={!checkIn || !checkOut ? 'Select dates first' : 'Confirm Booking'}
               >
                 Confirm Booking
               </button>

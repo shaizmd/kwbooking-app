@@ -33,6 +33,11 @@ export async function createBooking({
   const start = new Date(checkIn);
   const end = new Date(checkOut);
 
+  // Validate parsed dates early to avoid passing invalid Date objects into Prisma
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+    throw new Error(`Invalid check-in or check-out date: checkIn=${checkIn} checkOut=${checkOut}`);
+  }
+
   if (start >= end) {
     throw new Error("Invalid date range");
   }
