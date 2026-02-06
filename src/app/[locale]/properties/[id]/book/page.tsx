@@ -15,7 +15,9 @@ export default async function BookingPage({
   searchParams: Promise<{
     checkIn?: string;
     checkOut?: string;
-    guests?: string;
+    adults?: string;
+    children?: string;
+    rooms?: string;
     roomTypeId?: string | string[];
     packageId?: string | string[];
     quantity?: string | string[];
@@ -29,14 +31,14 @@ export default async function BookingPage({
   const token = cookieStore.get("access_token")?.value;
   
   if (!token) {
-    redirect(`/${locale}/login?redirect=/properties/${id}/book`);
+    redirect(`/${locale}/login?redirect=/${locale}/properties/${id}/book`);
   }
 
   let payload;
   try {
     payload = verifyAccessToken(token);
   } catch {
-    redirect(`/${locale}/login?redirect=/properties/${id}/book`);
+    redirect(`/${locale}/login?redirect=/${locale}/properties/${id}/book`);
   }
 
   if (payload.role !== "CUSTOMER") {
@@ -108,17 +110,28 @@ export default async function BookingPage({
   // Calculate booking details
   const checkIn = searchParamsResolved.checkIn || "";
   const checkOut = searchParamsResolved.checkOut || "";
-  const guests = Number(searchParamsResolved.guests) || property.baseGuests;
+  const adults = Number(searchParamsResolved.adults) || 2;
+  const children = Number(searchParamsResolved.children) || 0;
+  const rooms = Number(searchParamsResolved.rooms) || 1;
+  const guests = adults + children;
 
   const checkInDate = checkIn ? new Date(checkIn) : null;
   const checkOutDate = checkOut ? new Date(checkOut) : null;
-  const nights =
-    checkInDate && checkOutDate
-      ? Math.ceil(
-          (checkOutDate.getTime() - checkInDate.getTime()) /
-            (1000 * 60 * 60 * 24)
-        )
-      : 1;
+  const hasValidDates =
+    !!checkInDate &&
+    !!checkOutDate &&
+    !Number.isNaN(checkInDate.getTime()) &&
+    !Number.isNaN(checkOutDate.getTime()) &&
+    checkOutDate > checkInDate;
+
+  if (!hasValidDates) {
+    redirect(`/${locale}/properties/${id}`);
+  }
+
+  const nights = Math.ceil(
+    (checkOutDate.getTime() - checkInDate.getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
 
   // Calculate total price from room selections
   let subtotal = 0;
@@ -153,16 +166,27 @@ export default async function BookingPage({
   async function handleBooking(formData: FormData) {
     "use server";
 
+    const roomTypeIds = formData.getAll("roomTypeId") as string[];
+    const packageIds = formData.getAll("packageId") as string[];
+    const quantities = formData.getAll("quantity").map(q => Number(q));
+
+    const adults = Number(formData.get("adults"));
+    const children = Number(formData.get("children"));
+    const guests = adults + children;
+
     await createBooking({
       propertyId: id,
       checkIn: formData.get("checkIn") as string,
       checkOut: formData.get("checkOut") as string,
-      guests: Number(formData.get("guests")),
+      guests,
       guestFullName: formData.get("fullName") as string,
       guestEmail: formData.get("email") as string,
       guestPhone: (formData.get("phone") as string) || undefined,
       arrivalTime: (formData.get("arrivalTime") as string) || undefined,
       specialRequests: (formData.get("specialRequests") as string) || undefined,
+      roomTypeIds,
+      packageIds,
+      quantities,
       locale,
     });
   }
@@ -219,7 +243,19 @@ export default async function BookingPage({
                   {/* Hidden fields */}
                   <input type="hidden" name="checkIn" value={checkIn} />
                   <input type="hidden" name="checkOut" value={checkOut} />
-                  <input type="hidden" name="guests" value={guests} />
+                  <input type="hidden" name="adults" value={adults} />
+                  <input type="hidden" name="children" value={children} />
+                  <input type="hidden" name="rooms" value={rooms} />
+                  {/* Room selections */}
+                  {roomTypeIds.map((id, i) => (
+                    <input key={`roomType-${i}`} type="hidden" name="roomTypeId" value={id} />
+                  ))}
+                  {packageIds.map((id, i) => (
+                    <input key={`package-${i}`} type="hidden" name="packageId" value={id} />
+                  ))}
+                  {quantities.map((qty, i) => (
+                    <input key={`quantity-${i}`} type="hidden" name="quantity" value={qty} />
+                  ))}
                   
                   {/* Full Name */}
                   <div>

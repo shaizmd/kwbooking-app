@@ -82,10 +82,10 @@ export default async function PropertyDetailsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ checkIn?: string; checkOut?: string }>;
+  searchParams: Promise<{ checkIn?: string; checkOut?: string; adults?: string; children?: string; rooms?: string }>;
 }) {
   const { locale, id } = await params;
-  const { checkIn, checkOut } = await searchParams;
+  const { checkIn, checkOut, adults, children, rooms } = await searchParams;
 
   // Check if user is logged in
   let userId: string | null = null;
@@ -530,7 +530,7 @@ export default async function PropertyDetailsPage({
                 </div>
               </div>
               <Link
-                href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}` : ''}`}
+                href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults || '2'}&children=${children || '0'}&rooms=${rooms || '1'}` : ''}`}
                 className="btn-primary text-base px-8 py-3 inline-block whitespace-nowrap font-bold"
               >
                 Reserve now

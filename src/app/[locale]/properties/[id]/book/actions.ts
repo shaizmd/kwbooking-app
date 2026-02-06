@@ -15,6 +15,9 @@ export async function createBooking({
   guestPhone,
   arrivalTime,
   specialRequests,
+  roomTypeIds,
+  packageIds,
+  quantities,
   locale,
 }: {
   propertyId: string;
@@ -26,16 +29,24 @@ export async function createBooking({
   guestPhone?: string;
   arrivalTime?: string;
   specialRequests?: string;
+  roomTypeIds?: string[];
+  packageIds?: string[];
+  quantities?: number[];
   locale: string;
 }) {
-  const user = await requireRole("CUSTOMER");
+  try {
+    const user = await requireRole("CUSTOMER");
 
-  const start = new Date(checkIn);
-  const end = new Date(checkOut);
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
 
-  if (start >= end) {
-    throw new Error("Invalid date range");
-  }
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      redirect(`/${locale}/properties/${propertyId}`);
+    }
+
+    if (start >= end) {
+      redirect(`/${locale}/properties/${propertyId}`);
+    }
 
   const nights = Math.ceil(
     (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
@@ -73,14 +84,64 @@ export async function createBooking({
       throw new Error("Dates not available");
     }
 
-    // 4. Price calculation
-    const pricing = calculateBookingPrice({
-      basePrice: Number(property.basePrice),
-      nights,
-      guests,
-      baseGuests: property.baseGuests,
-      extraGuestPrice: Number(property.extraGuestPrice || 0),
-    });
+    // 4. Calculate price from room selections or base price
+    let subtotal = 0;
+    
+    if (roomTypeIds && roomTypeIds.length > 0 && packageIds && packageIds.length > 0) {
+      // Load room types and packages to calculate accurate pricing
+      const roomTypes = await tx.roomType.findMany({
+        where: {
+          id: { in: roomTypeIds },
+          propertyId,
+          isActive: true,
+        },
+        include: {
+          packages: {
+            where: {
+              id: { in: packageIds },
+              isActive: true,
+            },
+          },
+        },
+      });
+
+      // Calculate total from selected packages
+      roomTypeIds.forEach((roomTypeId, index) => {
+        const roomType = roomTypes.find(rt => rt.id === roomTypeId);
+        const pkg = roomType?.packages.find(p => p.id === packageIds[index]);
+        const quantity = quantities?.[index] || 1;
+        
+        if (pkg) {
+          subtotal += Number(pkg.finalPrice) * nights * quantity;
+        }
+      });
+
+      // If no valid packages found, fall back to base price
+      if (subtotal === 0) {
+        const pricing = calculateBookingPrice({
+          basePrice: Number(property.basePrice),
+          nights,
+          guests,
+          baseGuests: property.baseGuests,
+          extraGuestPrice: Number(property.extraGuestPrice || 0),
+        });
+        subtotal = pricing.subtotal;
+      }
+    } else {
+      // No room selections - use base price
+      const pricing = calculateBookingPrice({
+        basePrice: Number(property.basePrice),
+        nights,
+        guests,
+        baseGuests: property.baseGuests,
+        extraGuestPrice: Number(property.extraGuestPrice || 0),
+      });
+      subtotal = pricing.subtotal;
+    }
+
+    const taxRate = 0.05; // 5% tax
+    const taxAmount = subtotal * taxRate;
+    const totalAmount = subtotal + taxAmount;
 
     // 5. Create booking (PENDING) with guest details
     return tx.booking.create({
@@ -95,9 +156,9 @@ export async function createBooking({
         guestPhone,
         arrivalTime,
         specialRequests,
-        subtotal: pricing.subtotal,
-        extraCharges: pricing.extraCharges,
-        totalAmount: pricing.total,
+        subtotal,
+        extraCharges: taxAmount,
+        totalAmount,
         currency: property.currency,
         status: "PENDING",
       },
@@ -105,6 +166,19 @@ export async function createBooking({
   });
 
   redirect(`/${locale}/bookings/${booking.id}/pay`);
+  } catch (error) {
+    // Handle authentication/authorization errors
+    if (error instanceof Error) {
+      if (error.message === "Unauthorized" || error.message === "Invalid token") {
+        redirect(`/${locale}/login?redirect=/${locale}/properties/${propertyId}/book`);
+      }
+      if (error.message === "Forbidden: Insufficient permissions") {
+        redirect(`/${locale}/properties/${propertyId}`);
+      }
+    }
+    // Re-throw other errors
+    throw error;
+  }
 }
 
 export async function getBookingForPayment(bookingId: string) {
