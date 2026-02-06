@@ -5,7 +5,15 @@ import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-
 import { loadStripe } from "@stripe/stripe-js";
 import { createPaymentIntent } from "./actions";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
+if (!stripePublishableKey) {
+  console.error("NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is not set!");
+} else {
+  console.log("Stripe publishable key loaded:", stripePublishableKey.substring(0, 20) + "...");
+}
+
+const stripePromise = loadStripe(stripePublishableKey!);
 
 function CheckoutForm({ bookingId, locale }: { bookingId: string; locale: string }) {
   const stripe = useStripe();
@@ -94,17 +102,24 @@ export function PaymentForm({ bookingId, locale }: { bookingId: string; locale: 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  console.log("PaymentForm mounted for booking:", bookingId);
+
   // Load client secret on mount
   useEffect(() => {
+    console.log("Creating payment intent for booking:", bookingId);
     createPaymentIntent(bookingId)
       .then((result: { success: boolean; clientSecret?: string | null; error?: string }) => {
+        console.log("Payment intent result:", result);
         if (result.success && result.clientSecret) {
           setClientSecret(result.clientSecret);
+          console.log("Client secret set successfully");
         } else {
+          console.error("Payment intent failed:", result.error);
           setError(result.error || "Failed to initialize payment");
         }
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error("Payment intent error:", err);
         setError("An unexpected error occurred");
       })
       .finally(() => {

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const payload = verifyAccessToken(accessToken);
+    const payload = await verifyAccessToken(accessToken);
     
     if (payload.role !== "ADMIN") {
       return NextResponse.json(

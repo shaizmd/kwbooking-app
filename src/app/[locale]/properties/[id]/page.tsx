@@ -96,7 +96,7 @@ export default async function PropertyDetailsPage({
   
   if (token) {
     try {
-      const payload = verifyAccessToken(token);
+      const payload = await verifyAccessToken(token);
       userId = payload.sub;
       
       // Check if property is in wishlist

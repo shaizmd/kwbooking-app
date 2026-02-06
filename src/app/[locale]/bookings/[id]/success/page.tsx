@@ -6,6 +6,8 @@ import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
+import { stripe } from "@/lib/payments/stripe";
+import { BookingStatusPoll } from "./BookingStatusPoll";
 
 export default async function PaymentSuccessPage({
   params,
@@ -28,9 +30,30 @@ export default async function PaymentSuccessPage({
 
   let user;
   try {
-    user = verifyAccessToken(token);
+    user = await verifyAccessToken(token);
   } catch {
     redirect(`/${locale}/login`);
+  }
+
+  // CRITICAL: Verify payment intent with Stripe before showing success
+  if (!payment_intent) {
+    redirect(`/${locale}/bookings/${id}/pay`);
+  }
+
+  let paymentStatus: string;
+  try {
+    const intent = await stripe.paymentIntents.retrieve(payment_intent);
+    paymentStatus = intent.status;
+
+    // Only allow succeeded payments
+    if (paymentStatus !== "succeeded") {
+      console.error("Payment not succeeded:", paymentStatus);
+      // Redirect to payment page if payment failed/canceled
+      redirect(`/${locale}/bookings/${id}/pay?error=payment_${paymentStatus}`);
+    }
+  } catch (error) {
+    console.error("Failed to verify payment intent:", error);
+    redirect(`/${locale}/bookings/${id}/pay?error=verification_failed`);
   }
 
   // Get booking with invoice
@@ -72,8 +95,28 @@ export default async function PaymentSuccessPage({
     (booking.checkOut.getTime() - booking.checkIn.getTime()) / (1000 * 60 * 60 * 24)
   );
 
+  // Check if webhook has processed (booking confirmed)
+  const isWebhookProcessed = booking.status === "CONFIRMED" && booking.payment && booking.invoice;
+
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Payment Verified - Show appropriate message */}
+      {!isWebhookProcessed && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <div className="flex items-start">
+            <svg className="w-5 h-5 text-yellow-600 mt-0.5 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <h3 className="text-sm font-medium text-yellow-800">Payment Verified - Processing Booking</h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                Your payment was successful! We are confirming your booking and generating your invoice. This usually takes a few moments.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Success Icon */}
       <div className="text-center mb-8">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
@@ -149,13 +192,30 @@ export default async function PaymentSuccessPage({
           <div className="pt-6">
             <div className="flex justify-between items-center mb-4">
               <span className="text-gray-600">{t("status")}</span>
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                isWebhookProcessed 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
                 <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  {isWebhookProcessed ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  )}
                 </svg>
-                {t("confirmed")}
+                {isWebhookProcessed ? t("confirmed") : "Processing"}
               </span>
             </div>
+
+            {!isWebhookProcessed && (
+              <BookingStatusPoll 
+                bookingId={id} 
+                initialStatus={booking.status} 
+                locale={locale} 
+              />
+            )}
+
             <div className="flex justify-between items-center text-lg">
               <span className="font-semibold text-gray-900">{t("totalPaid")}</span>
               <span className="text-xl font-semibold" style={{ color: 'var(--red)' }}>

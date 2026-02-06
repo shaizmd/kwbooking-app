@@ -36,7 +36,7 @@ export default async function BookingPage({
 
   let payload;
   try {
-    payload = verifyAccessToken(token);
+    payload = await verifyAccessToken(token);
   } catch {
     redirect(`/${locale}/login?redirect=/${locale}/properties/${id}/book`);
   }
@@ -174,7 +174,8 @@ export default async function BookingPage({
     const children = Number(formData.get("children"));
     const guests = adults + children;
 
-    await createBooking({
+    // Don't await - let the redirect propagate
+    return createBooking({
       propertyId: id,
       checkIn: formData.get("checkIn") as string,
       checkOut: formData.get("checkOut") as string,

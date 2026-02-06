@@ -51,7 +51,7 @@ export default async function PublicPropertiesPage({
   
   if (token) {
     try {
-      const payload = verifyAccessToken(token);
+      const payload = await verifyAccessToken(token);
       userId = payload.sub;
       
       // Get user's wishlist
