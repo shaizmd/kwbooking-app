@@ -44,6 +44,11 @@
       "transparent": "Transparent pricing",
       "support": "24/7 support"
     },
+    "stats": {
+      "guests": "Happy Guests",
+      "properties": "Verified Properties",
+      "support": "Customer Support"
+    },
     "features": {
       "title": "Why choose BookStay?",
       "subtitle": "Everything you need for a seamless booking experience",

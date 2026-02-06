@@ -9,7 +9,13 @@ export const registerSchema = z.object({
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[a-z]/, "Password must contain at least one lowercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine(
+      (value) => !value || value.replace(/\D/g, "").length <= 10,
+      "Phone number must be at most 10 digits"
+    ),
   fullName: z.string().optional(),
   role: z.nativeEnum(UserRole).default(UserRole.CUSTOMER),
 });
@@ -21,5 +27,11 @@ export const loginSchema = z.object({
 
 export const updateProfileSchema = z.object({
   fullName: z.string().min(2).optional(),
-  phone: z.string().optional(),
+  phone: z
+    .string()
+    .optional()
+    .refine(
+      (value) => !value || value.replace(/\D/g, "").length <= 10,
+      "Phone number must be at most 10 digits"
+    ),
 });
