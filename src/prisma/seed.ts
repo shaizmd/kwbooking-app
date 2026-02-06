@@ -7,7 +7,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../lib/auth/password";
-import { Pool, neonConfig } from '@neondatabase/serverless';
+import { neonConfig } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import ws from 'ws';
 import { config } from "dotenv";
@@ -118,7 +118,7 @@ async function main() {
   // 2. Create Subscriptions for Hosts
   console.log("💳 Creating subscriptions...");
 
-  const _activeSubscription = await prisma.subscription.create({
+  await prisma.subscription.create({
     data: {
       hostId: host1.id,
       planName: "Premium",
@@ -131,7 +131,7 @@ async function main() {
     },
   });
 
-  const _expiredSubscription = await prisma.subscription.create({
+  await prisma.subscription.create({
     data: {
       hostId: host2.id,
       planName: "Basic",
@@ -282,7 +282,7 @@ async function main() {
     },
   });
 
-  const _property4 = await prisma.property.create({
+  await prisma.property.create({
     data: {
       hostId: host1.id,
       propertyType: "VILLA",
@@ -502,7 +502,7 @@ async function main() {
     },
   });
 
-  const _pendingBooking = await prisma.booking.create({
+  await prisma.booking.create({
     data: {
       propertyId: property2.id,
       customerId: customer1.id,
@@ -519,7 +519,7 @@ async function main() {
     },
   });
 
-  const _oldPendingBooking = await prisma.booking.create({
+  await prisma.booking.create({
     data: {
       propertyId: property2.id,
       customerId: customer2.id,
@@ -537,7 +537,7 @@ async function main() {
     },
   });
 
-  const _completedBooking = await prisma.booking.create({
+  await prisma.booking.create({
     data: {
       propertyId: property1.id,
       customerId: customer2.id,
@@ -561,7 +561,7 @@ async function main() {
   // 8. Create Payment for Confirmed Booking
   console.log("💰 Creating payments...");
 
-  const _payment = await prisma.payment.create({
+  await prisma.payment.create({
     data: {
       bookingId: confirmedBooking.id,
       provider: "stripe",
@@ -577,7 +577,7 @@ async function main() {
   // 9. Create Invoice for Confirmed Booking
   console.log("📄 Creating invoices...");
 
-  const _invoice = await prisma.invoice.create({
+  await prisma.invoice.create({
     data: {
       bookingId: confirmedBooking.id,
       invoiceNumber: "INV-2026-000001",

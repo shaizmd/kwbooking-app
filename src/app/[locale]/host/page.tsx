@@ -6,6 +6,9 @@ import { formatCurrency } from "@/lib/format";
 export default async function HostDashboard() {
   const user = await requireRole("HOST");
 
+  const monthAgo = new Date();
+  monthAgo.setDate(monthAgo.getDate() - 30);
+
   const [
     propertyCount,
     activeProperties,
@@ -50,7 +53,7 @@ export default async function HostDashboard() {
         property: { hostId: user.sub },
         status: { in: ["CONFIRMED", "COMPLETED"] },
         createdAt: {
-          gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          gte: monthAgo,
         },
       },
       _sum: {

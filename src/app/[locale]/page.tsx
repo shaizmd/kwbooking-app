@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { HeroSection, FeatureCard } from "@/components/animations/HomeAnimations";
 import { HostCTA } from "@/components/HostCTA";
@@ -17,10 +18,13 @@ export default async function HomePage({
       <section className="relative min-h-[520px] sm:min-h-[600px] lg:min-h-[680px] flex items-center justify-center pt-10 sm:pt-14 lg:pt-16 pb-20 sm:pb-32 lg:pb-40">
         {/* Hero Background Image */}
         <div className="absolute inset-0 z-0">
-          <img 
+          <Image
             src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=2070&auto=format&fit=crop"
             alt="Modern home interior"
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
+            sizes="100vw"
+            priority
           />
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30"></div>

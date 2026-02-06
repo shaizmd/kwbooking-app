@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
 import { getBookingForPayment } from "@/app/[locale]/properties/[id]/book/actions";
 import { PaymentForm } from "./PaymentForm";
+import Image from "next/image";
 
 export default async function PaymentPage({
   params,
@@ -88,11 +89,13 @@ export default async function PaymentPage({
             
             {/* Property Image */}
             {booking.property.images[0] && (
-              <div className="mb-4 rounded-lg overflow-hidden">
-                <img
+              <div className="mb-4 rounded-lg overflow-hidden relative h-40">
+                <Image
                   src={booking.property.images[0].imageUrl}
                   alt={booking.property.title}
-                  className="w-full h-40 object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 320px"
                 />
               </div>
             )}

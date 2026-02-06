@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { getPropertyImageUploadUrl, savePropertyImage } from "./actions";
 
@@ -130,8 +131,15 @@ export function ImageUploadForm({ propertyId }: { propertyId: string }) {
         <div className="mt-4">
           <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
           <div className="relative w-full max-w-md rounded-lg overflow-hidden border border-gray-300">
-            <div className="aspect-[4/3]">
-              <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+            <div className="aspect-[4/3] relative">
+              <Image
+                src={preview}
+                alt="Preview"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 480px"
+                unoptimized
+              />
             </div>
           </div>
         </div>

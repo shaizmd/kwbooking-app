@@ -3,7 +3,6 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 export async function addToWishlist(formData: FormData) {
   const user = await requireRole("CUSTOMER");

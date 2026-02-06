@@ -3,6 +3,7 @@ import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import { requireRole } from "@/lib/auth/require-role";
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 
 export default async function CustomerBookingsPage({
   params,
@@ -96,11 +97,13 @@ export default async function CustomerBookingsPage({
                 <div className="flex flex-col sm:flex-row">
                   {/* Property Image */}
                   {booking.property.images[0] && (
-                    <div className="sm:w-48 h-48 sm:h-auto shrink-0">
-                      <img
+                    <div className="sm:w-48 h-48 shrink-0 relative">
+                      <Image
                         src={booking.property.images[0].imageUrl}
                         alt={booking.property.title}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 640px) 100vw, 192px"
                       />
                     </div>
                   )}

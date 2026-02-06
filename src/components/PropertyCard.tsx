@@ -44,13 +44,21 @@ interface PropertyCardProps {
     images: PropertyImage[];
     amenities?: PropertyAmenity[];
   };
+  pricing?: {
+    nights: number;
+    totalPrice: number;
+    currency: string;
+    extraGuests: number;
+    requiredRooms: number;
+    roomNote?: string | null;
+  };
   locale: string;
   index?: number;
   userId?: string | null;
   isInWishlist?: boolean;
 }
 
-export function PropertyCard({ property, locale, index = 0, userId, isInWishlist = false }: PropertyCardProps) {
+export function PropertyCard({ property, pricing, locale, index = 0, userId, isInWishlist = false }: PropertyCardProps) {
   const coverImage = property.images[0];
   
   return (
@@ -131,6 +139,12 @@ export function PropertyCard({ property, locale, index = 0, userId, isInWishlist
                   <span>{property.baseGuests} guests</span>
                 </div>
 
+                {pricing?.roomNote && (
+                  <div className="text-xs text-red-600 mb-3">
+                    {pricing.roomNote}
+                  </div>
+                )}
+
                 {/* Amenities */}
                 {property.amenities && property.amenities.length > 0 && (
                   <div className="flex items-center gap-2 flex-wrap text-xs text-gray-600 mb-3">
@@ -181,18 +195,24 @@ export function PropertyCard({ property, locale, index = 0, userId, isInWishlist
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 mb-1">1 night</div>
-                  <div className="text-xl font-semibold text-gray-900">
-                    {formatCurrency(
-                      Number(property.basePrice),
-                      property.currency,
-                      locale
-                    )}
+                  <div className="text-sm text-gray-600 mb-1">
+                    {pricing ? `${pricing.nights} night${pricing.nights !== 1 ? "s" : ""}` : "1 night"}
                   </div>
-                  {property.extraGuestPrice && (
+                  <div className="text-xl font-semibold text-gray-900">
+                    {pricing
+                      ? formatCurrency(pricing.totalPrice, pricing.currency, locale)
+                      : formatCurrency(Number(property.basePrice), property.currency, locale)}
+                  </div>
+                  {pricing && pricing.extraGuests > 0 ? (
                     <div className="text-xs text-gray-500 mt-1">
-                      +{formatCurrency(Number(property.extraGuestPrice), property.currency, locale)}/extra guest
+                      Includes {pricing.extraGuests} extra guest{pricing.extraGuests !== 1 ? "s" : ""}
                     </div>
+                  ) : (
+                    property.extraGuestPrice && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        +{formatCurrency(Number(property.extraGuestPrice), property.currency, locale)}/extra guest
+                      </div>
+                    )
                   )}
                 </div>
               </div>

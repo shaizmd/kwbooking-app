@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DayPicker, DateRange } from "react-day-picker";
-import { format, differenceInDays } from "date-fns";
+import { format } from "date-fns";
 import "react-day-picker/style.css";
 
 interface HomeSearchProps {
@@ -52,8 +52,6 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
   const handleApplyGuests = () => {
     setShowGuestsPalette(false);
   };
-
-  const nights = range?.from && range?.to ? differenceInDays(range.to, range.from) : 0;
 
   return (
     <div className="w-full relative">

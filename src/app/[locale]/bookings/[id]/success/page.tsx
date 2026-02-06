@@ -5,6 +5,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
 import { getTranslations } from "next-intl/server";
+import Image from "next/image";
 
 export default async function PaymentSuccessPage({
   params,
@@ -88,11 +89,13 @@ export default async function PaymentSuccessPage({
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         {/* Property Image */}
         {booking.property.images[0] && (
-          <div className="h-48 overflow-hidden">
-            <img
+          <div className="h-48 overflow-hidden relative">
+            <Image
               src={booking.property.images[0].imageUrl}
               alt={booking.property.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 480px"
             />
           </div>
         )}

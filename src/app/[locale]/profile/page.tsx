@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
-import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 import { updateProfile, changePassword } from "./actions";
 import ProfileToasts from "./ProfileToasts";
@@ -11,7 +10,6 @@ export default async function ProfilePage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("profile");
   const userPayload = await requireRole("CUSTOMER");
 
   const user = await prisma.user.findUnique({

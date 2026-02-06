@@ -1,6 +1,7 @@
 import { requireRole } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+import Image from "next/image";
 import { ImageUploadForm } from "./ImageUploadForm";
 
 export default async function PropertyImagesPage({
@@ -78,11 +79,13 @@ export default async function PropertyImagesPage({
                 key={image.id}
                 className="relative group rounded-lg overflow-hidden border border-gray-200"
               >
-                <div className="aspect-[4/3] bg-gray-100">
-                  <img
+                <div className="aspect-[4/3] bg-gray-100 relative">
+                  <Image
                     src={image.imageUrl}
                     alt={`Property image ${index + 1}`}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 1024px) 100vw, 320px"
                   />
                 </div>
                 {index === 0 && (

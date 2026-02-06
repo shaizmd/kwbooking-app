@@ -83,6 +83,9 @@ export default async function BookingPage({
     notFound();
   }
 
+  type RoomType = (typeof property.roomTypes)[number];
+  type RoomPackage = RoomType["packages"][number];
+
   const coverImage = property.images[0];
 
   // Parse room selections from URL
@@ -120,8 +123,8 @@ export default async function BookingPage({
   // Calculate total price from room selections
   let subtotal = 0;
   const selectedRooms: Array<{
-    roomType: any;
-    package: any;
+    roomType: RoomType;
+    package: RoomPackage;
     quantity: number;
     price: number;
   }> = [];
@@ -164,9 +167,6 @@ export default async function BookingPage({
     });
   }
 
-  // Get today's date for min date validation
-  const today = new Date().toISOString().split('T')[0];
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -201,7 +201,7 @@ export default async function BookingPage({
             Enter your details
           </h1>
           <p className="text-gray-600">
-            We'll use this information to send your confirmation and updates about your booking
+            We&apos;ll use this information to send your confirmation and updates about your booking
           </p>
         </div>
 
