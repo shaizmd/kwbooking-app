@@ -91,25 +91,25 @@ export default function DateRangePicker({ propertyId, locale, maxGuests = 10 }: 
 
         {/* Guests */}
         <div>
-          <label className=\"block text-xs font-semibold text-gray-600 mb-1\">Guests</label>
-          <div className=\"flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 bg-white\">
+          <label className="block text-xs font-semibold text-gray-600 mb-1">Guests</label>
+          <div className="flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 bg-white">
             <button
               onClick={() => setAdults(Math.max(1, adults - 1))}
-              className=\"w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 text-sm font-bold\"
+              className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 text-sm font-bold"
               disabled={adults <= 1}
             >
               −
             </button>
-            <span className=\"flex-1 text-center text-sm font-semibold\">{totalGuests}</span>
+            <span className="flex-1 text-center text-sm font-semibold">{totalGuests}</span>
             <button
               onClick={() => setAdults(adults + 1)}
-              className=\"w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 text-sm font-bold\"
+              className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 text-sm font-bold"
             >
               +
             </button>
           </div>
           {isOverCapacity && (
-            <p className=\"text-xs text-orange-600 font-medium mt-1\">
+            <p className="text-xs text-orange-600 font-medium mt-1">
               ⚠️ Extra charges for {totalGuests - maxGuests} guest(s)
             </p>
           )}
