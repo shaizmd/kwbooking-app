@@ -275,7 +275,6 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
           </div>
         </>
       )}
->>>>>>> feat/global-search
     </div>
   );
 }
