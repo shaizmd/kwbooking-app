@@ -52,13 +52,14 @@ interface PropertyCardProps {
     requiredRooms: number;
     roomNote?: string | null;
   };
+  isSoldOut?: boolean;
   locale: string;
   index?: number;
   userId?: string | null;
   isInWishlist?: boolean;
 }
 
-export function PropertyCard({ property, pricing, locale, index = 0, userId, isInWishlist = false }: PropertyCardProps) {
+export function PropertyCard({ property, pricing, isSoldOut, locale, index = 0, userId, isInWishlist = false }: PropertyCardProps) {
   const coverImage = property.images[0];
   
   return (
@@ -195,24 +196,32 @@ export function PropertyCard({ property, pricing, locale, index = 0, userId, isI
                 </div>
                 
                 <div className="text-right">
-                  <div className="text-sm text-gray-600 mb-1">
-                    {pricing ? `${pricing.nights} night${pricing.nights !== 1 ? "s" : ""}` : "1 night"}
-                  </div>
-                  <div className="text-xl font-semibold text-gray-900">
-                    {pricing
-                      ? formatCurrency(pricing.totalPrice, pricing.currency, locale)
-                      : formatCurrency(Number(property.basePrice), property.currency, locale)}
-                  </div>
-                  {pricing && pricing.extraGuests > 0 ? (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Includes {pricing.extraGuests} extra guest{pricing.extraGuests !== 1 ? "s" : ""}
+                  {isSoldOut ? (
+                    <div className="bg-gray-100 text-gray-700 font-semibold px-4 py-2 rounded-lg border border-gray-300">
+                      Sold out on your dates!
                     </div>
                   ) : (
-                    property.extraGuestPrice && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        +{formatCurrency(Number(property.extraGuestPrice), property.currency, locale)}/extra guest
+                    <>
+                      <div className="text-sm text-gray-600 mb-1">
+                        {pricing ? `${pricing.nights} night${pricing.nights !== 1 ? "s" : ""}` : "1 night"}
                       </div>
-                    )
+                      <div className="text-xl font-semibold text-gray-900">
+                        {pricing
+                          ? formatCurrency(pricing.totalPrice, pricing.currency, locale)
+                          : formatCurrency(Number(property.basePrice), property.currency, locale)}
+                      </div>
+                      {pricing && pricing.extraGuests > 0 ? (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Includes {pricing.extraGuests} extra guest{pricing.extraGuests !== 1 ? "s" : ""}
+                        </div>
+                      ) : (
+                        property.extraGuestPrice && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            +{formatCurrency(Number(property.extraGuestPrice), property.currency, locale)}/extra guest
+                          </div>
+                        )
+                      )}
+                    </>
                   )}
                 </div>
               </div>

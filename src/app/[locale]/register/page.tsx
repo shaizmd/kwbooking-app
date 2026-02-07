@@ -133,10 +133,10 @@ export default function RegisterPage() {
                   name="phone"
                   type="tel"
                   inputMode="numeric"
-                  maxLength={10}
-                  pattern="\\d{1,10}"
-                  title="Enter up to 10 digits"
-                  placeholder="1234567890"
+                  maxLength={15}
+                  pattern="[0-9]{8,15}"
+                  title="Enter 8 to 15 digits"
+                  placeholder="12345678"
                   className="w-full px-4 py-3.5 border rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50"
                   style={{ 
                     borderColor: '#e5e7eb',
@@ -144,7 +144,7 @@ export default function RegisterPage() {
                   }}
                   onInput={(e) => {
                     const input = e.currentTarget;
-                    input.value = input.value.replace(/\D/g, "").slice(0, 10);
+                    input.value = input.value.replace(/\D/g, "").slice(0, 15);
                   }}
                 />
               </div>

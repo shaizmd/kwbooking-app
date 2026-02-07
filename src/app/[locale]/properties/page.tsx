@@ -88,27 +88,8 @@ export default async function PublicPropertiesPage({
     whereClause.bedrooms = { gte: roomsCount };
   }
 
-  if (hasValidDates && checkInDate && checkOutDate) {
-    whereClause.NOT = [
-      {
-        blockedDates: {
-          some: {
-            startDate: { lte: checkOutDate },
-            endDate: { gte: checkInDate },
-          },
-        },
-      },
-      {
-        bookings: {
-          some: {
-            status: { in: ["PENDING", "CONFIRMED"] },
-            checkIn: { lt: checkOutDate },
-            checkOut: { gt: checkInDate },
-          },
-        },
-      },
-    ];
-  }
+  // Note: We no longer filter out unavailable properties here
+  // so we can show them with "Sold out" badge
 
   // Build order by
   let orderBy: Prisma.PropertyOrderByWithRelationInput = { createdAt: "desc" };
@@ -136,6 +117,19 @@ export default async function PublicPropertiesPage({
           amenity: true,
         },
       },
+      blockedDates: hasValidDates && checkInDate && checkOutDate ? {
+        where: {
+          startDate: { lte: checkOutDate },
+          endDate: { gte: checkInDate },
+        },
+      } : false,
+      bookings: hasValidDates && checkInDate && checkOutDate ? {
+        where: {
+          status: { in: ["PENDING", "CONFIRMED"] },
+          checkIn: { lt: checkOutDate },
+          checkOut: { gt: checkInDate },
+        },
+      } : false,
     },
     orderBy,
   });
@@ -159,8 +153,15 @@ export default async function PublicPropertiesPage({
       const basePrice = Number(property.basePrice);
       const totalPrice = (basePrice * stayNights * requiredRooms) + (extraGuestPrice * extraGuests * stayNights);
 
+      // Check if property is sold out for selected dates
+      const isSoldOut = hasValidDates && (
+        (property.blockedDates && Array.isArray(property.blockedDates) && property.blockedDates.length > 0) ||
+        (property.bookings && Array.isArray(property.bookings) && property.bookings.length > 0)
+      );
+
       return {
         property,
+        isSoldOut,
         pricing: {
           nights: stayNights,
           totalPrice,
@@ -236,6 +237,7 @@ export default async function PublicPropertiesPage({
                       averageRating: item.property.averageRating ? Number(item.property.averageRating) : null,
                     }}
                     pricing={item.pricing}
+                    isSoldOut={item.isSoldOut}
                     locale={locale}
                     index={index}
                     userId={userId}
