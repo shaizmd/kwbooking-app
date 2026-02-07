@@ -22,7 +22,6 @@ export function Navigation() {
 
   // Fetch user on mount and when pathname changes
   useEffect(() => {
-    setLoading(true);
     getCurrentUser()
       .then(setUser)
       .finally(() => setLoading(false));

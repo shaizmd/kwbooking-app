@@ -1,13 +1,11 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
 import { ReactNode } from "react";
 import PropertyMap from "@/components/PropertyMap";
 import RoomSelection from "@/components/RoomSelection";
-import DateRangePicker from "@/components/DateRangePicker";
 import WishlistButton from "@/components/WishlistButton";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
@@ -84,11 +82,10 @@ export default async function PropertyDetailsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ checkIn?: string; checkOut?: string; guests?: string }>;
+  searchParams: Promise<{ checkIn?: string; checkOut?: string; adults?: string; children?: string; rooms?: string }>;
 }) {
   const { locale, id } = await params;
-  const { checkIn, checkOut, guests } = await searchParams;
-  const t = await getTranslations("propertyDetails");
+  const { checkIn, checkOut, adults, children, rooms } = await searchParams;
 
   // Check if user is logged in
   let userId: string | null = null;
@@ -99,7 +96,7 @@ export default async function PropertyDetailsPage({
   
   if (token) {
     try {
-      const payload = verifyAccessToken(token);
+      const payload = await verifyAccessToken(token);
       userId = payload.sub;
       
       // Check if property is in wishlist
@@ -176,6 +173,11 @@ export default async function PropertyDetailsPage({
       benefits: pkg.benefits ? JSON.parse(pkg.benefits) : [],
     })),
   }));
+
+  const defaultCheckIn = checkIn || new Date().toISOString().split("T")[0];
+  const checkOutBase = new Date();
+  checkOutBase.setDate(checkOutBase.getDate() + nights);
+  const defaultCheckOut = checkOut || checkOutBase.toISOString().split("T")[0];
 
   return (
     <div className="bg-white min-h-screen">
@@ -446,7 +448,7 @@ export default async function PropertyDetailsPage({
             {/* Location on Map Section */}
             {property.latitude && property.longitude && (
               <div id="map" className="border border-gray-200 rounded-lg p-6 bg-white">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Where you'll be</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Where you&apos;ll be</h2>
                 <div className="mb-3">
                   <p className="text-gray-700 font-semibold">{property.address}</p>
                   <p className="text-gray-600">{property.city}, {property.district}</p>
@@ -502,20 +504,13 @@ export default async function PropertyDetailsPage({
           <div className="mt-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Availability</h2>
             
-            {/* Date Range Picker */}
-            <DateRangePicker 
-              propertyId={property.id} 
-              locale={locale} 
-              maxGuests={property.maxGuests}
-            />
-            
             <RoomSelection
               roomTypes={formattedRoomTypes}
               currency={property.currency}
               locale={locale}
               nights={nights}
-              checkIn={checkIn || new Date().toISOString().split('T')[0]}
-              checkOut={checkOut || new Date(Date.now() + nights * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+              checkIn={defaultCheckIn}
+              checkOut={defaultCheckOut}
               propertyId={property.id}
             />
           </div>
@@ -535,7 +530,7 @@ export default async function PropertyDetailsPage({
                 </div>
               </div>
               <Link
-                href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}` : ''}`}
+                href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults || '2'}&children=${children || '0'}&rooms=${rooms || '1'}` : ''}`}
                 className="btn-primary text-base px-8 py-3 inline-block whitespace-nowrap font-bold"
               >
                 Reserve now

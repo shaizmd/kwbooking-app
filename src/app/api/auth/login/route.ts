@@ -38,8 +38,8 @@ export async function POST(req: Request) {
 
     const payload = { sub: user.id, role: user.role };
 
-    const accessToken = signAccessToken(payload);
-    const refreshToken = signRefreshToken(payload);
+    const accessToken = await signAccessToken(payload);
+    const refreshToken = await signRefreshToken(payload);
 
     // Extract IP and User-Agent for session tracking
     const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";

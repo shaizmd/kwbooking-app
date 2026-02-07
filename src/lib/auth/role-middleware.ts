@@ -27,8 +27,11 @@ function getRequiredRole(pathname: string): 'ADMIN' | 'HOST' | 'CUSTOMER' | null
 /**
  * Role-based middleware protection
  */
-export function roleMiddleware(request: NextRequest) {
+export async function roleMiddleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  
+  console.log("=== ROLE MIDDLEWARE ===");
+  console.log("Path:", pathname);
   
   // Skip role check for public routes
   if (
@@ -40,29 +43,39 @@ export function roleMiddleware(request: NextRequest) {
     pathname.includes('/_next') ||
     pathname.includes('/403')
   ) {
+    console.log("Public route, skipping auth check");
     return NextResponse.next();
   }
 
   const requiredRole = getRequiredRole(pathname);
   
+  console.log("Required role:", requiredRole);
+  
   if (!requiredRole) {
+    console.log("No role required, allowing access");
     return NextResponse.next();
   }
 
   // Get access token
   const token = request.cookies.get('access_token')?.value;
 
+  console.log("Token present:", !!token);
+  
   if (!token) {
     // Redirect to login
     const locale = pathname.split('/')[1] || 'en';
+    console.log(`[AUTH] No token for ${pathname}, redirecting to /${locale}/login`);
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 
   try {
-    const payload = verifyAccessToken(token);
+    const payload = await verifyAccessToken(token);
+    
+    console.log(`[AUTH] Token verified for ${payload.sub} (${payload.role})`);
 
     // ADMIN has access to all routes
     if (payload.role === 'ADMIN') {
+      console.log("ADMIN user, allowing access");
       return NextResponse.next();
     }
 
@@ -73,10 +86,12 @@ export function roleMiddleware(request: NextRequest) {
       return NextResponse.redirect(new URL(`/${locale}/403`, request.url));
     }
 
+    console.log("Role check passed, allowing access");
     return NextResponse.next();
-  } catch {
+  } catch (error) {
     // Invalid token - redirect to login
     const locale = pathname.split('/')[1] || 'en';
+    console.error("Token verification failed:", error);
     return NextResponse.redirect(new URL(`/${locale}/login`, request.url));
   }
 }

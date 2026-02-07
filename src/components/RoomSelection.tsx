@@ -398,10 +398,28 @@ export default function RoomSelection({
             </div>
             <button
               onClick={() => {
+                // Calculate total guests from selected rooms
+                let totalGuests = 0;
+                let totalRooms = 0;
+                Object.entries(selectedRooms).forEach(
+                  ([roomTypeId, selection]) => {
+                    if (selection.quantity > 0) {
+                      const roomType = roomTypes.find(rt => rt.id === roomTypeId);
+                      if (roomType) {
+                        totalGuests += roomType.maxGuests * selection.quantity;
+                      }
+                      totalRooms += selection.quantity;
+                    }
+                  }
+                );
+
                 // Build booking URL with selected rooms
                 const params = new URLSearchParams();
                 params.set("checkIn", checkIn);
                 params.set("checkOut", checkOut);
+                params.set("adults", Math.max(1, totalGuests).toString());
+                params.set("children", "0");
+                params.set("rooms", Math.max(1, totalRooms).toString());
                 Object.entries(selectedRooms).forEach(
                   ([roomTypeId, selection]) => {
                     if (selection.quantity > 0) {

@@ -18,7 +18,7 @@ export async function POST() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = verifyRefreshToken(refreshToken);
+    const payload = await verifyRefreshToken(refreshToken);
 
     const session = await prisma.session.findFirst({
       where: {
@@ -31,8 +31,8 @@ export async function POST() {
       return NextResponse.json({ error: "Session expired" }, { status: 401 });
     }
 
-    const newAccessToken = signAccessToken(payload);
-    const newRefreshToken = signRefreshToken(payload);
+    const newAccessToken = await signAccessToken(payload);
+    const newRefreshToken = await signRefreshToken(payload);
 
     await prisma.session.update({
       where: { id: session.id },

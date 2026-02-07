@@ -1,184 +1,252 @@
-import Link from "next/link";
+import { prisma } from "@/lib/db";
 import { getTranslations } from "next-intl/server";
-import { HeroSection, FeatureCard } from "@/components/animations/HomeAnimations";
-import { HostCTA } from "@/components/HostCTA";
-import HomeSearch from "@/components/HomeSearch";
+import { PropertyCard } from "@/components/PropertyCard";
+import { PropertyFilters } from "@/components/PropertyFilters";
+import { Prisma } from "@prisma/client";
+import { cookies } from "next/headers";
+import { verifyAccessToken } from "@/lib/auth/jwt";
+import { differenceInCalendarDays } from "date-fns";
 
-export default async function HomePage({
+export default async function PublicPropertiesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{
+    type?: string;
+    sort?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    checkIn?: string;
+    checkOut?: string;
+    adults?: string;
+    children?: string;
+    rooms?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const t = await getTranslations("home");
+  const { type, sort, minPrice, maxPrice, checkIn, checkOut, adults, children, rooms } = await searchParams;
+  const t = await getTranslations("properties");
+
+  const adultsCount = Math.max(1, Number.parseInt(adults ?? "2", 10) || 2);
+  const childrenCount = Math.max(0, Number.parseInt(children ?? "0", 10) || 0);
+  const roomsCount = Math.max(1, Number.parseInt(rooms ?? "1", 10) || 1);
+  const totalGuests = adultsCount + childrenCount;
+
+  const checkInDate = checkIn ? new Date(checkIn) : null;
+  const checkOutDate = checkOut ? new Date(checkOut) : null;
+  const hasValidDates =
+    checkInDate instanceof Date &&
+    checkOutDate instanceof Date &&
+    !Number.isNaN(checkInDate.getTime()) &&
+    !Number.isNaN(checkOutDate.getTime()) &&
+    checkOutDate > checkInDate;
+
+  // Check if user is logged in
+  let userId: string | null = null;
+  let wishlistPropertyIds: string[] = [];
+  
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+  
+  if (token) {
+    try {
+      const payload = await verifyAccessToken(token);
+      userId = payload.sub;
+      
+      // Get user's wishlist
+      const wishlist = await prisma.wishlist.findMany({
+        where: { userId },
+        select: { propertyId: true },
+      });
+      wishlistPropertyIds = wishlist.map(w => w.propertyId);
+    } catch {
+      // Invalid token, user not logged in
+    }
+  }
+
+  // Build filter conditions
+  const whereClause: Prisma.PropertyWhereInput = {
+    status: "ACTIVE",
+  };
+
+  if (type && type !== "all") {
+    whereClause.propertyType = type.toUpperCase();
+  }
+
+  if (minPrice || maxPrice) {
+    whereClause.basePrice = {};
+    if (minPrice) whereClause.basePrice.gte = parseFloat(minPrice);
+    if (maxPrice) whereClause.basePrice.lte = parseFloat(maxPrice);
+  }
+
+  if (totalGuests > 0) {
+    whereClause.maxGuests = { gte: totalGuests };
+  }
+
+  if (roomsCount > 0) {
+    whereClause.bedrooms = { gte: roomsCount };
+  }
+
+  if (hasValidDates && checkInDate && checkOutDate) {
+    whereClause.NOT = [
+      {
+        blockedDates: {
+          some: {
+            startDate: { lte: checkOutDate },
+            endDate: { gte: checkInDate },
+          },
+        },
+      },
+      {
+        bookings: {
+          some: {
+            status: { in: ["PENDING", "CONFIRMED"] },
+            checkIn: { lt: checkOutDate },
+            checkOut: { gt: checkInDate },
+          },
+        },
+      },
+    ];
+  }
+
+  // Build order by
+  let orderBy: Prisma.PropertyOrderByWithRelationInput = { createdAt: "desc" };
+  
+  if (sort === "price-low") {
+    orderBy = { basePrice: "asc" };
+  } else if (sort === "price-high") {
+    orderBy = { basePrice: "desc" };
+  } else if (sort === "rating") {
+    orderBy = { averageRating: "desc" };
+  } else if (sort === "featured") {
+    orderBy = { featured: "desc" };
+  }
+
+  const properties = await prisma.property.findMany({
+    where: whereClause,
+    include: {
+      images: {
+        orderBy: { order: "asc" },
+        take: 1,
+      },
+      amenities: {
+        take: 5,
+        include: {
+          amenity: true,
+        },
+      },
+    },
+    orderBy,
+  });
+
+  const stayNights = hasValidDates && checkInDate && checkOutDate
+    ? Math.max(1, differenceInCalendarDays(checkOutDate, checkInDate))
+    : 1;
+
+  const computedProperties = properties
+    .map((property) => {
+      const baseGuestsPerRoom = Math.max(1, property.baseGuests);
+      const requiredRooms = Math.max(roomsCount, Math.ceil(totalGuests / baseGuestsPerRoom));
+
+      if (requiredRooms > property.bedrooms) {
+        return null;
+      }
+
+      const includedGuests = baseGuestsPerRoom * requiredRooms;
+      const extraGuests = Math.max(0, totalGuests - includedGuests);
+      const extraGuestPrice = property.extraGuestPrice ? Number(property.extraGuestPrice) : 0;
+      const basePrice = Number(property.basePrice);
+      const totalPrice = (basePrice * stayNights * requiredRooms) + (extraGuestPrice * extraGuests * stayNights);
+
+      return {
+        property,
+        pricing: {
+          nights: stayNights,
+          totalPrice,
+          currency: property.currency,
+          extraGuests,
+          requiredRooms,
+          roomNote: requiredRooms > roomsCount
+            ? `Rooms adjusted to ${requiredRooms} to fit ${totalGuests} guests`
+            : null,
+        },
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  const propertyTypes = await prisma.property.findMany({
+    where: { status: "ACTIVE" },
+    select: { propertyType: true },
+    distinct: ["propertyType"],
+  });
+
   return (
-    <main className="min-h-screen bg-white">
-      {/* Hero Section - Modern with Image */}
-      <section className="relative min-h-[480px] lg:min-h-[520px] flex items-start pt-8 sm:pt-12 pb-32 sm:pb-40 lg:pb-48">
-        {/* Hero Background Image */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?q=80&w=2070&auto=format&fit=crop"
-            alt="Modern home interior"
-            className="w-full h-full object-cover"
-          />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30"></div>
+    <div className="min-h-screen bg-gray-100">
+      {/* Header Section */}
+      <div className="text-white" style={{ backgroundColor: 'var(--red)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <h1 className="text-xl font-semibold mb-2">
+            {t("title")}
+          </h1>
+          <p className="text-sm" style={{ opacity: 0.9 }}>
+            {computedProperties.length} {computedProperties.length === 1 ? 'property' : 'properties'} found
+          </p>
         </div>
-        
-        {/* Glassmorphic Content Container */}
-        <div className="relative z-10 w-full">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <HeroSection>
-            <div className="max-w-4xl mx-auto text-center">
-                {/* Trust Badge */}
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-1.5 bg-white border border-white/60 mx-auto shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-                  <svg className="w-3.5 h-3.5 text-black" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar Filters */}
+          <div className="lg:w-80 shrink-0">
+            <PropertyFilters
+              propertyTypes={propertyTypes.map((pt) => pt.propertyType)}
+              currentType={type}
+              currentSort={sort}
+              currentMinPrice={minPrice}
+              currentMaxPrice={maxPrice}
+            />
+          </div>
+
+          {/* Properties List */}
+          <div className="flex-1">
+            {computedProperties.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                   </svg>
-                  <span className="text-xs font-semibold text-black">{t("hero.badge")}</span>
                 </div>
-
-                {/* Main Headline - Prominent */}
-                <h1 className="text-3xl sm:text-4xl lg:text-4xl font-extrabold mb-1.5 tracking-tight text-white leading-tight drop-shadow-[0_6px_24px_rgba(0,0,0,0.45)]">
-                  {t("hero.title")}
-                </h1>
-
-                {/* Subheadline - Stronger */}
-                <p className="text-base sm:text-lg text-white/90 font-semibold mb-3 max-w-2xl mx-auto drop-shadow-[0_3px_14px_rgba(0,0,0,0.4)]">
-                  {t("hero.subtitle")}
+                <h3 className="text-xl font-semibold mb-2 text-gray-900">
+                  {t("noProperties")}
+                </h3>
+                <p className="text-gray-600">
+                  {t("noPropertiesDesc")}
                 </p>
-
-                {/* Search Box - Hero element with glassmorphic background */}
-                <div className="mb-2.5">
-                  <HomeSearch locale={locale} />
-                </div>
-
-                {/* Quick action buttons */}
-                <div className="flex flex-wrap items-center justify-center gap-4">
-                  <Link
-                    href={`/${locale}/properties`}
-                    className="group px-6 py-2.5 text-sm rounded-full font-semibold transition-all border drop-shadow-[0_12px_30px_rgba(0,0,0,0.25)]"
-                    style={{
-                      background: "linear-gradient(135deg, rgba(198, 40, 40, 0.95) 0%, rgba(183, 28, 28, 0.95) 100%)",
-                      color: "white",
-                      borderColor: "rgba(255, 255, 255, 0.25)",
-                      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.2)",
-                      backdropFilter: "blur(6px)",
-                    }}
-                  >
-                    <span className="flex items-center gap-2">
-                      Browse all properties
-                      <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </Link>
-                  <Link
-                    href={`/${locale}/host/properties/new`}
-                    className="group px-6 py-2.5 text-sm rounded-full font-semibold transition-all border drop-shadow-[0_12px_30px_rgba(0,0,0,0.25)]"
-                    style={{
-                      background: "white",
-                      color: "#111111",
-                      borderColor: "rgba(255, 255, 255, 0.9)",
-                      boxShadow: "0 8px 24px rgba(0, 0, 0, 0.18)",
-                    }}
-                  >
-                    <span className="flex items-center gap-2">
-                      List your property
-                      <svg className="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </span>
-                  </Link>
-                </div>
               </div>
-            </HeroSection>
+            ) : (
+              <div className="space-y-4">
+                {computedProperties.map((item, index) => (
+                  <PropertyCard 
+                    key={item.property.id}
+                    property={{
+                      ...item.property,
+                      basePrice: Number(item.property.basePrice),
+                      extraGuestPrice: item.property.extraGuestPrice ? Number(item.property.extraGuestPrice) : null,
+                      averageRating: item.property.averageRating ? Number(item.property.averageRating) : null,
+                    }}
+                    pricing={item.pricing}
+                    locale={locale}
+                    index={index}
+                    userId={userId}
+                    isInWishlist={wishlistPropertyIds.includes(item.property.id)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </div>
-
-      </section>
-
-      {/* Features Section - Card-based modern layout */}
-      <section className="py-20 sm:py-24 lg:py-32 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="text-center mb-16 lg:mb-20">
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 tracking-tight">
-              {t("features.title")}
-            </h2>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-              {t("features.subtitle")}
-            </p>
-          </div>
-
-          {/* Feature Cards Grid */}
-          <div className="grid md:grid-cols-3 gap-8 lg:gap-10">
-            {/* Verified Properties */}
-            <FeatureCard index={0}>
-            <div className="group relative bg-white border border-gray-200 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
-              
-              <div className="w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center mb-6 group-hover:bg-red-100 transition-colors">
-                <svg className="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
-              </div>
-              
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                {t("features.verified.title")}
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                {t("features.verified.description")}
-              </p>
-            </div>
-            </FeatureCard>
-
-            {/* Best Prices */}
-            <FeatureCard index={1}>
-            <div className="group relative bg-white border border-gray-200 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
-              
-              <div className="w-14 h-14 rounded-xl bg-green-50 flex items-center justify-center mb-6 group-hover:bg-green-100 transition-colors">
-                <svg className="w-7 h-7 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                {t("features.pricing.title")}
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                {t("features.pricing.description")}
-              </p>
-            </div>
-            </FeatureCard>
-
-            {/* 24/7 Support */}
-            <FeatureCard index={2}>
-            <div className="group relative bg-white border border-gray-200 rounded-2xl p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
-              
-              <div className="w-14 h-14 rounded-xl bg-blue-50 flex items-center justify-center mb-6 group-hover:bg-blue-100 transition-colors">
-                <svg className="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-              </div>
-              
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                {t("features.support.title")}
-              </h3>
-              <p className="text-gray-600 leading-relaxed">
-                {t("features.support.description")}
-              </p>
-            </div>
-            </FeatureCard>
-          </div>
-        </div>
-      </section>
-
-      {/* Host CTA Section */}
-      <HostCTA locale={locale} />
-    </main>
+      </div>
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
 import { getBookingForPayment } from "@/app/[locale]/properties/[id]/book/actions";
 import { PaymentForm } from "./PaymentForm";
+import Image from "next/image";
 
 export default async function PaymentPage({
   params,
@@ -16,15 +17,18 @@ export default async function PaymentPage({
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
   
+  console.log("Access token present:", !!token);
+  
   if (!token) {
-    redirect(`/${locale}/login?redirect=/bookings/${id}/pay`);
+    console.log("No token found, redirecting to login");
+    redirect(`/${locale}/login?redirect=${encodeURIComponent(`/${locale}/bookings/${id}/pay`)}`);
   }
 
   let user;
   try {
-    user = verifyAccessToken(token);
-  } catch {
-    redirect(`/${locale}/login?redirect=/bookings/${id}/pay`);
+    user = await verifyAccessToken(token);
+  } catch (error) {
+    redirect(`/${locale}/login?redirect=${encodeURIComponent(`/${locale}/bookings/${id}/pay`)}`);
   }
 
   if (user.role !== "CUSTOMER") {
@@ -32,14 +36,30 @@ export default async function PaymentPage({
   }
 
   // Get booking with property details
-  const booking = await getBookingForPayment(id);
+  let booking;
+  try {
+    console.log("Fetching booking for ID:", id);
+    booking = await getBookingForPayment(id);
+    console.log("Booking fetched successfully. Status:", booking.status, "Customer ID:", booking.customerId);
+  } catch (error) {
+    console.error("Error fetching booking for payment:", error);
+    console.log("Redirecting to bookings list due to error");
+    redirect(`/${locale}/bookings`);
+  }
 
-  if (!booking || booking.customerId !== user.sub) {
+  if (!booking) {
+    console.log("Booking is null, returning notFound");
+    notFound();
+  }
+
+  if (booking.customerId !== user.sub) {
+    console.log("User ID mismatch! Booking Customer ID:", booking.customerId, "User Sub:", user.sub);
     notFound();
   }
 
   // If already confirmed, redirect to bookings
   if (booking.status === "CONFIRMED") {
+    console.log("Booking already CONFIRMED, redirecting to bookings list");
     redirect(`/${locale}/bookings`);
   }
 
@@ -88,11 +108,13 @@ export default async function PaymentPage({
             
             {/* Property Image */}
             {booking.property.images[0] && (
-              <div className="mb-4 rounded-lg overflow-hidden">
-                <img
+              <div className="mb-4 rounded-lg overflow-hidden relative h-40">
+                <Image
                   src={booking.property.images[0].imageUrl}
                   alt={booking.property.title}
-                  className="w-full h-40 object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 100vw, 320px"
                 />
               </div>
             )}
