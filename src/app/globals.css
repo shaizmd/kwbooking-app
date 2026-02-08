@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-day-picker/style.css";
 
 /* Geometria Font Fallback */
 @font-face {
@@ -727,12 +728,14 @@ select:focus {
 }
 
 /* ================= DATE PICKER CUSTOMIZATION ================= */
+
+/* ONLY COLORS + SAFE OVERRIDES */
+
 .rdp {
   --rdp-accent-color: var(--red);
   --rdp-accent-background-color: var(--red);
   --rdp-background-color: rgba(198, 40, 40, 0.08);
   --rdp-outline: 2px solid var(--red);
-  margin: 0;
   font-family: inherit;
 }
 
@@ -740,128 +743,7 @@ select:focus {
   font-family: inherit;
 }
 
-.rdp-months {
-  display: flex;
-  gap: 2rem;
-  justify-content: center;
-}
-
-.rdp-month {
-  width: 100%;
-}
-
-.rdp-caption {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  font-weight: 600;
-  color: var(--text-dark);
-  font-size: 1rem;
-  position: relative;
-}
-
-.rdp-caption_label {
-  font-weight: 600;
-  color: var(--text-dark);
-  font-size: 1rem;
-}
-
-.rdp-nav {
-  display: flex;
-  gap: 0.5rem;
-  position: absolute;
-  right: 0;
-}
-
-.rdp-button_reset,
-.rdp-nav_button {
-  width: 2rem;
-  height: 2rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: var(--red) !important;
-  padding: 0;
-}
-
-.rdp-nav_button svg,
-.rdp-button_reset svg {
-  fill: var(--red) !important;
-  color: var(--red) !important;
-  stroke: var(--red) !important;
-  width: 1.25rem;
-  height: 1.25rem;
-}
-
-.rdp-nav_button:hover:not(:disabled),
-.rdp-button_reset:hover:not(:disabled) {
-  background-color: var(--red-glow);
-  color: var(--red) !important;
-}
-
-.rdp-nav_button:disabled,
-.rdp-button_reset:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.rdp-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 1rem;
-}
-
-.rdp-head {
-  border-bottom: 1px solid var(--border-light);
-}
-
-.rdp-head_cell {
-  font-weight: 600;
-  color: var(--text-muted);
-  font-size: 0.75rem;
-  padding: 0.75rem 0.5rem;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.rdp-tbody {
-  border: none;
-}
-
-.rdp-cell {
-  padding: 2px;
-  text-align: center;
-}
-
-.rdp-button,
-.rdp-day {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.875rem;
-  transition: all 0.2s;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  color: var(--text-dark);
-  margin: auto;
-  padding: 0;
-}
-
-.rdp-day:hover:not(.rdp-day_disabled):not(.rdp-day_selected):not(.rdp-day_range_start):not(.rdp-day_range_end):not(.rdp-day_range_middle) {
-  background-color: var(--red-glow) !important;
-  color: var(--red) !important;
-}
-
+/* Selected Day */
 .rdp-day_selected,
 .rdp-day_selected:hover {
   background-color: var(--red) !important;
@@ -869,49 +751,65 @@ select:focus {
   font-weight: 600;
 }
 
+/* Today */
 .rdp-day_today:not(.rdp-day_selected) {
   font-weight: 700;
   color: var(--red);
-  position: relative;
 }
 
-.rdp-day_today:not(.rdp-day_selected)::after {
-  content: '';
-  position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: var(--red);
-}
-
+/* Disabled */
 .rdp-day_disabled {
   opacity: 0.3;
-  cursor: not-allowed;
   color: var(--text-muted);
 }
 
-.rdp-day_outside {
-  opacity: 0.4;
-  color: var(--text-muted);
-}
-
+/* Range */
 .rdp-day_range_start,
 .rdp-day_range_end {
   background-color: var(--red) !important;
   color: white !important;
-  font-weight: 600;
 }
 
 .rdp-day_range_middle {
   background-color: var(--red-glow) !important;
   color: var(--red) !important;
-  border-radius: 0 !important;
 }
 
-.rdp-day_range_middle:hover {
-  background-color: rgba(198, 40, 40, 0.15) !important;
+/* ===== NUCLEAR MULTI MONTH FIX — DO NOT MODIFY ===== */
+
+.rdp {
+  width: max-content !important;
 }
+
+.rdp-months {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 40px !important;
+  width: auto !important;
+}
+
+.rdp-month {
+  flex: 0 0 auto !important;
+  width: 320px !important;
+  min-width: 320px !important;
+  max-width: 320px !important;
+}
+/* ===== ABSOLUTE FORCE 2 MONTH HORIZONTAL ===== */
+
+.rdp-months {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;   /* ⭐ MOST IMPORTANT */
+  justify-content: center !important;
+  gap: 32px !important;
+}
+
+.rdp-month {
+  flex: 0 0 auto !important;      /* prevent shrinking */
+  width: 320px !important;        /* force stable width */
+}
+
 

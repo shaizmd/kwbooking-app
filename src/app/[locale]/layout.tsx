@@ -6,7 +6,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import ToastProvider from "@/components/ToastProvider";
 import "../globals.css";
-import "../date-picker.css";
+
 
 export default async function LocaleLayout({
   children,
