@@ -11,7 +11,7 @@ export async function GET() {
   }
 
   try {
-    const payload = verifyAccessToken(token);
+    const payload = await verifyAccessToken(token);
     const user = await prisma.user.findUnique({
       where: { id: payload.sub },
       select: { 

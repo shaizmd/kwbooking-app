@@ -7,7 +7,7 @@
 
 import { PrismaClient } from "@prisma/client";
 import { hashPassword } from "../lib/auth/password";
-import { Pool, neonConfig } from '@neondatabase/serverless';
+import { neonConfig } from '@neondatabase/serverless';
 import { PrismaNeon } from '@prisma/adapter-neon';
 import ws from 'ws';
 import { config } from "dotenv";
@@ -118,7 +118,7 @@ async function main() {
   // 2. Create Subscriptions for Hosts
   console.log("💳 Creating subscriptions...");
 
-  const _activeSubscription = await prisma.subscription.create({
+  await prisma.subscription.create({
     data: {
       hostId: host1.id,
       planName: "Premium",
@@ -131,7 +131,7 @@ async function main() {
     },
   });
 
-  const _expiredSubscription = await prisma.subscription.create({
+  await prisma.subscription.create({
     data: {
       hostId: host2.id,
       planName: "Basic",
@@ -174,7 +174,7 @@ async function main() {
       nearestAirport: "Kuwait International Airport",
       airportDistance: 15.3,
       basePrice: 150.5,
-      currency: "KWD",
+      currency: "USD",
       baseGuests: 4,
       maxGuests: 8,
       extraGuestPrice: 20.0,
@@ -218,7 +218,7 @@ async function main() {
       nearestAirport: "Kuwait International Airport",
       airportDistance: 18.7,
       basePrice: 80.0,
-      currency: "KWD",
+      currency: "USD",
       baseGuests: 2,
       maxGuests: 4,
       extraGuestPrice: 15.0,
@@ -263,7 +263,7 @@ async function main() {
       nearestAirport: "Kuwait International Airport",
       airportDistance: 12.1,
       basePrice: 45.0,
-      currency: "KWD",
+      currency: "USD",
       baseGuests: 2,
       maxGuests: 2,
       bedrooms: 1,
@@ -282,7 +282,7 @@ async function main() {
     },
   });
 
-  const _property4 = await prisma.property.create({
+  await prisma.property.create({
     data: {
       hostId: host1.id,
       propertyType: "VILLA",
@@ -292,7 +292,7 @@ async function main() {
       latitude: 29.1739,
       longitude: 48.1249,
       basePrice: 200.0,
-      currency: "KWD",
+      currency: "USD",
       baseGuests: 6,
       maxGuests: 12,
       extraGuestPrice: 18.0,
@@ -311,9 +311,64 @@ async function main() {
     },
   });
 
-  console.log(`✅ Created ${4} properties`);
+  // Property similar to the one in the image (Holiday Inn Express)
+  const property4 = await prisma.property.create({
+    data: {
+      hostId: host1.id,
+      propertyType: "HOTEL",
+      title: "Holiday Inn Express Hyderabad Hitec City By IHG",
+      description: "The facilities were top-notch and exceeded our expectations. Great location in the business district with modern amenities.",
+      location: "Gachibowli, Hyderabad - 7.4 km to center",
+      address: "709 m from Raidurg Station • 766 m from Shilparamam Cultural Society",
+      city: "Hyderabad",
+      district: "Gachibowli",
+      country: "India",
+      countryCode: "IN",
+      latitude: 17.4326,
+      longitude: 78.3808,
+      distanceToCenter: 7.4,
+      nearestAirport: "Rajiv Gandhi International Airport",
+      airportDistance: 35.2,
+      basePrice: 75.0,
+      currency: "USD",
+      baseGuests: 2,
+      maxGuests: 3,
+      bedrooms: 50, // Hotel with multiple rooms
+      bathrooms: 1,
+      beds: 1,
+      averageRating: 7.1,
+      reviewCount: 1928,
+      featured: false,
+      instantBooking: true,
+      status: "ACTIVE",
+      slug: "holiday-inn-express-hyderabad",
+    },
+  });
 
-  // 4. Add Property Images
+  console.log(`✅ Created ${5} properties`);
+
+  // 4. Create Blocked Dates for Testing 'Sold Out' functionality
+  console.log("📅 Creating blocked dates...");
+  
+  const today = new Date();
+  const nextWeek = new Date(today);
+  nextWeek.setDate(today.getDate() + 7);
+  
+  const nextWeekEnd = new Date(nextWeek);
+  nextWeekEnd.setDate(nextWeek.getDate() + 5);
+
+  await prisma.blockedDate.create({
+    data: {
+      propertyId: property4.id,
+      startDate: nextWeek,
+      endDate: nextWeekEnd,
+      reason: "Maintenance",
+    },
+  });
+
+  console.log(`✅ Created blocked dates for testing`);
+
+  // 5. Add Property Images
   console.log("📸 Adding property images...");
 
   await prisma.propertyImage.createMany({
@@ -327,10 +382,13 @@ async function main() {
       { propertyId: property2.id, imageUrl: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2", order: 2 },
       // Property 3 images
       { propertyId: property3.id, imageUrl: "https://images.unsplash.com/photo-1554995207-c18c203602cb", order: 1 },
+      // Property 4 images (Holiday Inn)
+      { propertyId: property4.id, imageUrl: "https://images.unsplash.com/photo-1566073771259-6a8506099945", order: 1 },
+      { propertyId: property4.id, imageUrl: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb", order: 2 },
     ],
   });
 
-  console.log(`✅ Added ${6} property images`);
+  console.log(`✅ Added ${8} property images`);
 
   // 5. Create Amenities (Master List)
   console.log("✨ Creating amenities...");
@@ -478,6 +536,46 @@ async function main() {
     },
   });
 
+  // Room type for property4 (Holiday Inn Express)
+  const hotelRoom = await prisma.roomType.create({
+    data: {
+      propertyId: property4.id,
+      name: "Standard Double Room",
+      description: "Comfortable room with modern amenities and city views",
+      bedType: "1 Double Bed or 2 Twin Beds",
+      bedCount: 1,
+      roomSize: 28,
+      maxGuests: 2,
+      basePrice: 75.0,
+      features: JSON.stringify([
+        "Free WiFi",
+        "Air conditioning",
+        "Flat-screen TV",
+        "Work desk",
+        "Coffee maker",
+        "Private bathroom"
+      ]),
+      isActive: true,
+    },
+  });
+
+  await prisma.roomPackage.create({
+    data: {
+      roomTypeId: hotelRoom.id,
+      name: "Room with Breakfast",
+      finalPrice: 75.0,
+      freeCancellation: true,
+      cancellationDeadline: 24,
+      cancellationDeadlineText: "before 1 day",
+      isRefundable: true,
+      prepaymentRequired: false,
+      noCreditCard: true,
+      benefits: JSON.stringify(["Free breakfast", "Free WiFi", "Free parking"]),
+      isActive: true,
+      sortOrder: 1,
+    },
+  });
+
   console.log(`✅ Created room types and packages`);
 
   // 7. Create Bookings (various states)
@@ -497,12 +595,12 @@ async function main() {
       subtotal: 451.5, // 3 nights * 150.5
       extraCharges: 0,
       totalAmount: 451.5,
-      currency: "KWD",
+      currency: "USD",
       status: "CONFIRMED",
     },
   });
 
-  const _pendingBooking = await prisma.booking.create({
+  await prisma.booking.create({
     data: {
       propertyId: property2.id,
       customerId: customer1.id,
@@ -514,12 +612,12 @@ async function main() {
       subtotal: 240.0, // 3 nights * 80
       extraCharges: 0,
       totalAmount: 240.0,
-      currency: "KWD",
+      currency: "USD",
       status: "PENDING", // Awaiting payment
     },
   });
 
-  const _oldPendingBooking = await prisma.booking.create({
+  await prisma.booking.create({
     data: {
       propertyId: property2.id,
       customerId: customer2.id,
@@ -531,13 +629,13 @@ async function main() {
       subtotal: 160.0,
       extraCharges: 0,
       totalAmount: 160.0,
-      currency: "KWD",
+      currency: "USD",
       status: "PENDING",
       createdAt: new Date(Date.now() - 30 * 60 * 1000), // Created 30 minutes ago (should be auto-cancelled)
     },
   });
 
-  const _completedBooking = await prisma.booking.create({
+  await prisma.booking.create({
     data: {
       propertyId: property1.id,
       customerId: customer2.id,
@@ -551,7 +649,7 @@ async function main() {
       subtotal: 491.5, // 3 nights * 150.5 + 2 extra guests * 20 * 3
       extraCharges: 120.0,
       totalAmount: 611.5,
-      currency: "KWD",
+      currency: "USD",
       status: "COMPLETED",
     },
   });
@@ -561,13 +659,13 @@ async function main() {
   // 8. Create Payment for Confirmed Booking
   console.log("💰 Creating payments...");
 
-  const _payment = await prisma.payment.create({
+  await prisma.payment.create({
     data: {
       bookingId: confirmedBooking.id,
       provider: "stripe",
       providerRef: "pi_test_1234567890",
       amount: 451.5,
-      currency: "KWD",
+      currency: "USD",
       status: "SUCCESS",
     },
   });
@@ -577,14 +675,14 @@ async function main() {
   // 9. Create Invoice for Confirmed Booking
   console.log("📄 Creating invoices...");
 
-  const _invoice = await prisma.invoice.create({
+  await prisma.invoice.create({
     data: {
       bookingId: confirmedBooking.id,
       invoiceNumber: "INV-2026-000001",
       subtotal: 451.5,
       taxAmount: 0,
       totalAmount: 451.5,
-      currency: "KWD",
+      currency: "USD",
       pdfUrl: "https://example.com/invoices/INV-2026-000001.pdf",
     },
   });

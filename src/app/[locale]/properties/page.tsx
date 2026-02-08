@@ -5,17 +5,42 @@ import { PropertyFilters } from "@/components/PropertyFilters";
 import { Prisma } from "@prisma/client";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
+import { differenceInCalendarDays } from "date-fns";
 
 export default async function PublicPropertiesPage({
   params,
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ type?: string; sort?: string; minPrice?: string; maxPrice?: string }>;
+  searchParams: Promise<{
+    type?: string;
+    sort?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    checkIn?: string;
+    checkOut?: string;
+    adults?: string;
+    children?: string;
+    rooms?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { type, sort, minPrice, maxPrice } = await searchParams;
+  const { type, sort, minPrice, maxPrice, checkIn, checkOut, adults, children, rooms } = await searchParams;
   const t = await getTranslations("properties");
+
+  const adultsCount = Math.max(1, Number.parseInt(adults ?? "2", 10) || 2);
+  const childrenCount = Math.max(0, Number.parseInt(children ?? "0", 10) || 0);
+  const roomsCount = Math.max(1, Number.parseInt(rooms ?? "1", 10) || 1);
+  const totalGuests = adultsCount + childrenCount;
+
+  const checkInDate = checkIn ? new Date(checkIn) : null;
+  const checkOutDate = checkOut ? new Date(checkOut) : null;
+  const hasValidDates =
+    checkInDate instanceof Date &&
+    checkOutDate instanceof Date &&
+    !Number.isNaN(checkInDate.getTime()) &&
+    !Number.isNaN(checkOutDate.getTime()) &&
+    checkOutDate > checkInDate;
 
   // Check if user is logged in
   let userId: string | null = null;
@@ -26,7 +51,7 @@ export default async function PublicPropertiesPage({
   
   if (token) {
     try {
-      const payload = verifyAccessToken(token);
+      const payload = await verifyAccessToken(token);
       userId = payload.sub;
       
       // Get user's wishlist
@@ -55,6 +80,17 @@ export default async function PublicPropertiesPage({
     if (maxPrice) whereClause.basePrice.lte = parseFloat(maxPrice);
   }
 
+  if (totalGuests > 0) {
+    whereClause.maxGuests = { gte: totalGuests };
+  }
+
+  if (roomsCount > 0) {
+    whereClause.bedrooms = { gte: roomsCount };
+  }
+
+  // Note: We no longer filter out unavailable properties here
+  // so we can show them with "Sold out" badge
+
   // Build order by
   let orderBy: Prisma.PropertyOrderByWithRelationInput = { createdAt: "desc" };
   
@@ -81,9 +117,64 @@ export default async function PublicPropertiesPage({
           amenity: true,
         },
       },
+      blockedDates: hasValidDates && checkInDate && checkOutDate ? {
+        where: {
+          startDate: { lte: checkOutDate },
+          endDate: { gte: checkInDate },
+        },
+      } : false,
+      bookings: hasValidDates && checkInDate && checkOutDate ? {
+        where: {
+          status: { in: ["PENDING", "CONFIRMED"] },
+          checkIn: { lt: checkOutDate },
+          checkOut: { gt: checkInDate },
+        },
+      } : false,
     },
     orderBy,
   });
+
+  const stayNights = hasValidDates && checkInDate && checkOutDate
+    ? Math.max(1, differenceInCalendarDays(checkOutDate, checkInDate))
+    : 1;
+
+  const computedProperties = properties
+    .map((property) => {
+      const baseGuestsPerRoom = Math.max(1, property.baseGuests);
+      const requiredRooms = Math.max(roomsCount, Math.ceil(totalGuests / baseGuestsPerRoom));
+
+      if (requiredRooms > property.bedrooms) {
+        return null;
+      }
+
+      const includedGuests = baseGuestsPerRoom * requiredRooms;
+      const extraGuests = Math.max(0, totalGuests - includedGuests);
+      const extraGuestPrice = property.extraGuestPrice ? Number(property.extraGuestPrice) : 0;
+      const basePrice = Number(property.basePrice);
+      const totalPrice = (basePrice * stayNights * requiredRooms) + (extraGuestPrice * extraGuests * stayNights);
+
+      // Check if property is sold out for selected dates
+      const isSoldOut = hasValidDates && (
+        (property.blockedDates && Array.isArray(property.blockedDates) && property.blockedDates.length > 0) ||
+        (property.bookings && Array.isArray(property.bookings) && property.bookings.length > 0)
+      );
+
+      return {
+        property,
+        isSoldOut,
+        pricing: {
+          nights: stayNights,
+          totalPrice,
+          currency: property.currency,
+          extraGuests,
+          requiredRooms,
+          roomNote: requiredRooms > roomsCount
+            ? `Rooms adjusted to ${requiredRooms} to fit ${totalGuests} guests`
+            : null,
+        },
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
 
   const propertyTypes = await prisma.property.findMany({
     where: { status: "ACTIVE" },
@@ -100,7 +191,7 @@ export default async function PublicPropertiesPage({
             {t("title")}
           </h1>
           <p className="text-sm" style={{ opacity: 0.9 }}>
-            {properties.length} {properties.length === 1 ? 'property' : 'properties'} found
+            {computedProperties.length} {computedProperties.length === 1 ? 'property' : 'properties'} found
           </p>
         </div>
       </div>
@@ -120,7 +211,7 @@ export default async function PublicPropertiesPage({
 
           {/* Properties List */}
           <div className="flex-1">
-            {properties.length === 0 ? (
+            {computedProperties.length === 0 ? (
               <div className="bg-white rounded-lg shadow-sm p-12 text-center">
                 <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
                   <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,19 +227,21 @@ export default async function PublicPropertiesPage({
               </div>
             ) : (
               <div className="space-y-4">
-                {properties.map((property, index) => (
+                {computedProperties.map((item, index) => (
                   <PropertyCard 
-                    key={property.id}
+                    key={item.property.id}
                     property={{
-                      ...property,
-                      basePrice: Number(property.basePrice),
-                      extraGuestPrice: property.extraGuestPrice ? Number(property.extraGuestPrice) : null,
-                      averageRating: property.averageRating ? Number(property.averageRating) : null,
+                      ...item.property,
+                      basePrice: Number(item.property.basePrice),
+                      extraGuestPrice: item.property.extraGuestPrice ? Number(item.property.extraGuestPrice) : null,
+                      averageRating: item.property.averageRating ? Number(item.property.averageRating) : null,
                     }}
+                    pricing={item.pricing}
+                    isSoldOut={item.isSoldOut}
                     locale={locale}
                     index={index}
                     userId={userId}
-                    isInWishlist={wishlistPropertyIds.includes(property.id)}
+                    isInWishlist={wishlistPropertyIds.includes(item.property.id)}
                   />
                 ))}
               </div>

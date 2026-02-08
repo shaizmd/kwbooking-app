@@ -10,12 +10,16 @@ export async function requireAuth() {
   const token = cookieStore.get("access_token")?.value;
   
   if (!token) {
+    console.log("requireAuth - No token found in cookies");
     throw new Error("Unauthorized");
   }
 
   try {
-    return verifyAccessToken(token);
-  } catch {
+    const payload = await verifyAccessToken(token);
+    console.log("requireAuth - Token verified. Payload Sub:", payload.sub);
+    return payload;
+  } catch (error) {
+    console.error("requireAuth - Token verification failed:", error);
     throw new Error("Invalid token");
   }
 }

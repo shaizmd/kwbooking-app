@@ -21,7 +21,7 @@ export async function verifyAuth(): Promise<AuthUser | null> {
     }
 
     // Verify and return user
-    const payload = verifyAccessToken(token);
+    const payload = await verifyAccessToken(token);
     return payload;
   } catch {
     return null;

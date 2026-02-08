@@ -1,13 +1,11 @@
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
-import { formatCurrency, formatNumber } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import Image from "next/image";
-import { getTranslations } from "next-intl/server";
 import { ReactNode } from "react";
 import PropertyMap from "@/components/PropertyMap";
 import RoomSelection from "@/components/RoomSelection";
-import DateRangePicker from "@/components/DateRangePicker";
 import WishlistButton from "@/components/WishlistButton";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
@@ -84,11 +82,10 @@ export default async function PropertyDetailsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ checkIn?: string; checkOut?: string; guests?: string }>;
+  searchParams: Promise<{ checkIn?: string; checkOut?: string; adults?: string; children?: string; rooms?: string; error?: string }>;
 }) {
   const { locale, id } = await params;
-  const { checkIn, checkOut, guests } = await searchParams;
-  const t = await getTranslations("propertyDetails");
+  const { checkIn, checkOut, adults, children, rooms, error } = await searchParams;
 
   // Check if user is logged in
   let userId: string | null = null;
@@ -99,7 +96,7 @@ export default async function PropertyDetailsPage({
   
   if (token) {
     try {
-      const payload = verifyAccessToken(token);
+      const payload = await verifyAccessToken(token);
       userId = payload.sub;
       
       // Check if property is in wishlist
@@ -112,6 +109,14 @@ export default async function PropertyDetailsPage({
     }
   }
 
+  const checkInDate = checkIn ? new Date(checkIn) : null;
+  const checkOutDate = checkOut ? new Date(checkOut) : null;
+  const hasValidDates =
+    checkInDate instanceof Date &&
+    checkOutDate instanceof Date &&
+    !Number.isNaN(checkInDate.getTime()) &&
+    !Number.isNaN(checkOutDate.getTime()) &&
+    checkOutDate > checkInDate;
 
   const property = await prisma.property.findFirst({
     where: {
@@ -127,6 +132,19 @@ export default async function PropertyDetailsPage({
           amenity: true,
         },
       },
+      blockedDates: hasValidDates && checkInDate && checkOutDate ? {
+        where: {
+          startDate: { lte: checkOutDate },
+          endDate: { gte: checkInDate },
+        },
+      } : false,
+      bookings: hasValidDates && checkInDate && checkOutDate ? {
+        where: {
+          status: { in: ["PENDING", "CONFIRMED"] },
+          checkIn: { lt: checkOutDate },
+          checkOut: { gt: checkInDate },
+        },
+      } : false,
       roomTypes: {
         where: { isActive: true },
         include: {
@@ -143,6 +161,12 @@ export default async function PropertyDetailsPage({
   if (!property) {
     notFound();
   }
+
+  // Check if property is sold out
+  const isSoldOut = hasValidDates && (
+    ((property as any).blockedDates?.length > 0) ||
+    ((property as any).bookings?.length > 0)
+  );
 
   const coverImage = property.images[0];
   const otherImages = property.images.slice(1, 5); // Show up to 4 more images
@@ -177,6 +201,11 @@ export default async function PropertyDetailsPage({
     })),
   }));
 
+  const defaultCheckIn = checkIn || new Date().toISOString().split("T")[0];
+  const checkOutBase = new Date();
+  checkOutBase.setDate(checkOutBase.getDate() + nights);
+  const defaultCheckOut = checkOut || checkOutBase.toISOString().split("T")[0];
+
   return (
     <div className="bg-white min-h-screen">
       {/* Header Strip with Back Button */}
@@ -195,6 +224,26 @@ export default async function PropertyDetailsPage({
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {/* Error/Sold Out Messages */}
+        {(error || isSoldOut) && (
+          <div className="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm">
+            <div className="flex items-center">
+              <div className="shrink-0">
+                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm font-bold text-red-700">
+                  {error === 'Property not available' || error === 'Dates not available' || isSoldOut 
+                    ? 'Sold out on your dates! Please try different dates or another property.' 
+                    : error || 'This property is not available for the selected dates.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Property Title & Location */}
         <div className="mb-4">
           <div className="flex items-start justify-between gap-4 mb-3">
@@ -446,7 +495,7 @@ export default async function PropertyDetailsPage({
             {/* Location on Map Section */}
             {property.latitude && property.longitude && (
               <div id="map" className="border border-gray-200 rounded-lg p-6 bg-white">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Where you'll be</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Where you&apos;ll be</h2>
                 <div className="mb-3">
                   <p className="text-gray-700 font-semibold">{property.address}</p>
                   <p className="text-gray-600">{property.city}, {property.district}</p>
@@ -502,44 +551,47 @@ export default async function PropertyDetailsPage({
           <div className="mt-12">
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Availability</h2>
             
-            {/* Date Range Picker */}
-            <DateRangePicker 
-              propertyId={property.id} 
-              locale={locale} 
-              maxGuests={property.maxGuests}
-            />
-            
             <RoomSelection
               roomTypes={formattedRoomTypes}
               currency={property.currency}
               locale={locale}
               nights={nights}
-              checkIn={checkIn || new Date().toISOString().split('T')[0]}
-              checkOut={checkOut || new Date(Date.now() + nights * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}
+              checkIn={defaultCheckIn}
+              checkOut={defaultCheckOut}
               propertyId={property.id}
+              disabled={isSoldOut}
             />
           </div>
         )}
 
         {/* Fallback for properties without room types */}
         {formattedRoomTypes.length === 0 && (
-          <div className="mt-12 bg-blue-50 border-2 rounded-lg p-6 shadow-sm" style={{ borderColor: 'var(--red)' }}>
+          <div className="mt-12 bg-blue-50 border-2 rounded-lg p-6 shadow-sm" style={{ borderColor: isSoldOut ? '#e5e7eb' : 'var(--red)' }}>
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Book this property</h3>
-                <div className="flex items-baseline gap-2">
-                  <div className="text-3xl font-bold text-gray-900">
-                    {formatCurrency(Number(property.basePrice), property.currency, locale)}
+                <h3 className="text-xl font-bold text-gray-900 mb-2">
+                  {isSoldOut ? 'Sold out on these dates' : 'Book this property'}
+                </h3>
+                {!isSoldOut && (
+                  <div className="flex items-baseline gap-2">
+                    <div className="text-3xl font-bold text-gray-900">
+                      {formatCurrency(Number(property.basePrice), property.currency, locale)}
+                    </div>
+                    <div className="text-sm text-gray-600 font-semibold">per night</div>
                   </div>
-                  <div className="text-sm text-gray-600 font-semibold">per night</div>
-                </div>
+                )}
+                {isSoldOut && (
+                  <p className="text-gray-600 font-medium italic">Please try different dates</p>
+                )}
               </div>
-              <Link
-                href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}` : ''}`}
-                className="btn-primary text-base px-8 py-3 inline-block whitespace-nowrap font-bold"
-              >
-                Reserve now
-              </Link>
+              {!isSoldOut && (
+                <Link
+                  href={`/${locale}/properties/${id}/book${checkIn && checkOut ? `?checkIn=${checkIn}&checkOut=${checkOut}&adults=${adults || '2'}&children=${children || '0'}&rooms=${rooms || '1'}` : ''}`}
+                  className="btn-primary text-base px-8 py-3 inline-block whitespace-nowrap font-bold"
+                >
+                  Reserve now
+                </Link>
+              )}
             </div>
           </div>
         )}

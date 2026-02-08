@@ -28,7 +28,9 @@ export default function DateRangePicker({ propertyId, locale, maxGuests = 10 }: 
     return undefined;
   });
   
-  const [guests, setGuests] = useState(searchParams.get("guests") || "2");
+  const [adults, setAdults] = useState(Number(searchParams.get("adults") || "2"));
+  const [children, setChildren] = useState(Number(searchParams.get("children") || "0"));
+  const [rooms, setRooms] = useState(Number(searchParams.get("rooms") || "1"));
   const [showCalendar, setShowCalendar] = useState(false);
 
   const handleDateSelect = (selectedRange: DateRange | undefined) => {
@@ -44,15 +46,17 @@ export default function DateRangePicker({ propertyId, locale, maxGuests = 10 }: 
     }
   };
 
-  const guestCount = parseInt(guests);
-  const isOverCapacity = maxGuests && guestCount > maxGuests;
+  const totalGuests = adults + children;
+  const isOverCapacity = maxGuests && totalGuests > maxGuests;
 
   const handleSearch = () => {
     if (range?.from && range?.to) {
       const params = new URLSearchParams();
       params.set("checkIn", format(range.from, "yyyy-MM-dd"));
       params.set("checkOut", format(range.to, "yyyy-MM-dd"));
-      params.set("guests", guests);
+      params.set("adults", adults.toString());
+      params.set("children", children.toString());
+      params.set("rooms", rooms.toString());
       router.push(`/${locale}/properties/${propertyId}?${params.toString()}`);
       setShowCalendar(false);
     }
@@ -90,15 +94,15 @@ export default function DateRangePicker({ propertyId, locale, maxGuests = 10 }: 
           <label className="block text-xs font-semibold text-gray-600 mb-1">Guests</label>
           <div className="flex items-center gap-2 border border-gray-300 rounded-md px-3 py-2 bg-white">
             <button
-              onClick={() => setGuests(Math.max(1, guestCount - 1).toString())}
+              onClick={() => setAdults(Math.max(1, adults - 1))}
               className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 text-sm font-bold"
-              disabled={guestCount <= 1}
+              disabled={adults <= 1}
             >
               −
             </button>
-            <span className="flex-1 text-center text-sm font-semibold">{guests}</span>
+            <span className="flex-1 text-center text-sm font-semibold">{totalGuests}</span>
             <button
-              onClick={() => setGuests((guestCount + 1).toString())}
+              onClick={() => setAdults(adults + 1)}
               className="w-6 h-6 rounded-full border border-gray-400 flex items-center justify-center hover:bg-gray-100 text-sm font-bold"
             >
               +
@@ -106,7 +110,7 @@ export default function DateRangePicker({ propertyId, locale, maxGuests = 10 }: 
           </div>
           {isOverCapacity && (
             <p className="text-xs text-orange-600 font-medium mt-1">
-              ⚠️ Extra charges for {guestCount - maxGuests} guest(s)
+              ⚠️ Extra charges for {totalGuests - maxGuests} guest(s)
             </p>
           )}
         </div>

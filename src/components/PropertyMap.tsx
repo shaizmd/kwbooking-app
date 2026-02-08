@@ -27,9 +27,6 @@ export default function PropertyMap({
 }: PropertyMapProps) {
   const [isMapExpanded, setIsMapExpanded] = useState(false);
 
-  // Google Maps static image URL
-  const mapUrl = `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=${isMapExpanded ? 15 : 13}&size=${isMapExpanded ? '1200x600' : '600x300'}&markers=color:red%7C${latitude},${longitude}&key=YOUR_GOOGLE_MAPS_API_KEY`;
-
   // Fallback to OpenStreetMap if Google Maps API key is not available
   const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${longitude - 0.02},${latitude - 0.02},${longitude + 0.02},${latitude + 0.02}&layer=mapnik&marker=${latitude},${longitude}`;
 
@@ -37,7 +34,7 @@ export default function PropertyMap({
     <div className="space-y-4">
       {/* Location Header */}
       <div>
-        <h2 className="text-2xl font-semibold mb-2">Where you'll be</h2>
+        <h2 className="text-2xl font-semibold mb-2">Where you&apos;ll be</h2>
         <p className="text-gray-600">
           {address && <span>{address}, </span>}
           {district && <span>{district}, </span>}
@@ -158,7 +155,7 @@ export default function PropertyMap({
         <div className="text-sm text-blue-900">
           <p className="font-medium mb-1">Exact location provided after booking</p>
           <p className="text-blue-700">
-            For your privacy and security, we'll share the exact address with confirmed guests only.
+            For your privacy and security, we&apos;ll share the exact address with confirmed guests only.
           </p>
         </div>
       </div>

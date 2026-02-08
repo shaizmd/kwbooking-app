@@ -1,13 +1,13 @@
 import createMiddleware from 'next-intl/middleware';
 import { routing } from './i18n/routing';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { roleMiddleware } from './lib/auth/role-middleware';
 
 const i18nMiddleware = createMiddleware(routing);
 
-export default function middleware(request: NextRequest) {
+export default async function middleware(request: NextRequest) {
   // First, handle role-based protection
-  const roleResponse = roleMiddleware(request);
+  const roleResponse = await roleMiddleware(request);
   
   // If role middleware returns a redirect, use it
   if (roleResponse.status === 307 || roleResponse.status === 302) {

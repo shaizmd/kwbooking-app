@@ -17,7 +17,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const payload = verifyAccessToken(token.value);
+    const payload = await verifyAccessToken(token.value);
     if (!payload || payload.role !== "HOST") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

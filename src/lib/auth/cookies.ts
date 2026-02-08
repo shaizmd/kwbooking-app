@@ -11,14 +11,14 @@ export async function setAuthCookies(
   cookieStore.set("access_token", accessToken, {
     httpOnly: true,
     secure: isProd,
-    sameSite: "strict",
+    sameSite: "lax",
     path: "/",
   });
 
   cookieStore.set("refresh_token", refreshToken, {
     httpOnly: true,
     secure: isProd,
-    sameSite: "strict",
+    sameSite: "lax",
     path: "/",
   });
 }

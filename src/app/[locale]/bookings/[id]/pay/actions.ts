@@ -31,12 +31,20 @@ export async function createPaymentIntent(bookingId: string) {
     }
 
     if (booking.status !== "PENDING") {
+      console.log("Booking is not pending. Status:", booking.status);
       return { success: false, error: "Booking is not pending payment" };
     }
 
+    // List of 3-decimal currencies for Stripe
+    const threeDecimalCurrencies = ["KWD", "BHD", "OMR", "JOD", "TND"];
+    const isThreeDecimal = threeDecimalCurrencies.includes(booking.currency.toUpperCase());
+    const multiplier = isThreeDecimal ? 1000 : 100;
+
+    console.log(`Stripe attempt: Amount: ${Number(booking.totalAmount)}, Multiplier: ${multiplier}, Currency: ${booking.currency.toLowerCase()}`);
+
     // Create payment intent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(Number(booking.totalAmount) * 100), // Convert to cents
+      amount: Math.round(Number(booking.totalAmount) * multiplier),
       currency: booking.currency.toLowerCase(),
       metadata: {
         bookingId: booking.id,
@@ -48,13 +56,18 @@ export async function createPaymentIntent(bookingId: string) {
       },
     });
 
+    console.log("Stripe Payment Intent created successfully:", paymentIntent.id);
+
     return {
       success: true,
       clientSecret: paymentIntent.client_secret,
     };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Payment intent creation error:", error);
-    return { success: false, error: "Failed to create payment intent" };
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Failed to create payment intent" 
+    };
   }
   });
 }

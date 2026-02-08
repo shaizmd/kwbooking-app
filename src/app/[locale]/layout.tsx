@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-page-custom-font */
 import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { locales, localeDirection, type Locale } from "@/config/locales";
