@@ -61,14 +61,9 @@ export async function createBooking({
   const start = new Date(checkIn);
   const end = new Date(checkOut);
 
-<<<<<<< HEAD
   // Validate parsed dates early to avoid passing invalid Date objects into Prisma
   if (isNaN(start.getTime()) || isNaN(end.getTime())) {
     throw new Error(`Invalid check-in or check-out date: checkIn=${checkIn} checkOut=${checkOut}`);
-=======
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
-    redirect(`/${locale}/properties/${propertyId}`);
->>>>>>> 69f2dd493d50a8d033195e28363bc0bee90d2b8a
   }
 
   if (start >= end) {
@@ -121,7 +116,6 @@ export async function createBooking({
       let selectedPackageId: string | null = null;
       
       if (roomTypeIds && roomTypeIds.length > 0 && packageIds && packageIds.length > 0) {
-        // Load room types and packages to calculate accurate pricing
         const roomTypes = await tx.roomType.findMany({
           where: {
             id: { in: roomTypeIds },
@@ -138,7 +132,6 @@ export async function createBooking({
           },
         });
 
-        // Calculate total from selected packages
         roomTypeIds.forEach((roomTypeId, index) => {
           const roomType = roomTypes.find(rt => rt.id === roomTypeId);
           const pkg = roomType?.packages.find(p => p.id === packageIds[index]);
@@ -147,7 +140,6 @@ export async function createBooking({
           if (pkg) {
             subtotal += Number(pkg.finalPrice) * nights * quantity;
             totalRoomCount += quantity;
-            // Save first room type and package for the booking record
             if (!selectedRoomTypeId) {
               selectedRoomTypeId = roomTypeId;
               selectedPackageId = pkg.id;
@@ -155,7 +147,6 @@ export async function createBooking({
           }
         });
 
-        // If no valid packages found, fall back to base price
         if (subtotal === 0) {
           const pricing = calculateBookingPrice({
             basePrice: Number(property.basePrice),
@@ -167,7 +158,6 @@ export async function createBooking({
           subtotal = pricing.subtotal;
         }
       } else {
-        // No room selections - use base price
         const pricing = calculateBookingPrice({
           basePrice: Number(property.basePrice),
           nights,
@@ -178,11 +168,10 @@ export async function createBooking({
         subtotal = pricing.subtotal;
       }
 
-      const taxRate = 0.05; // 5% tax
+      const taxRate = 0.05;
       const taxAmount = subtotal * taxRate;
       const totalAmount = subtotal + taxAmount;
 
-      // 5. Create booking (PENDING) with guest details
       return tx.booking.create({
         data: {
           propertyId,
@@ -210,7 +199,6 @@ export async function createBooking({
     console.log("=== BOOKING TRANSACTION ERROR ===");
     console.error("Transaction error:", error);
     
-    // Handle known errors
     if (error instanceof Error) {
       if (
         error.message === "Property not available" ||
@@ -220,15 +208,12 @@ export async function createBooking({
         redirect(`/${locale}/properties/${propertyId}?error=${encodeURIComponent(error.message)}`);
       }
     }
-    // Redirect with generic error
     redirect(`/${locale}/properties/${propertyId}?error=booking_failed`);
   }
 
   console.log("=== BOOKING CREATED SUCCESSFULLY ===");
   console.log("Booking ID:", booking.id);
-  console.log("Redirecting to:", `/${locale}/bookings/${booking.id}/pay`);
   
-  // Redirect to payment page - this MUST NOT be in a try-catch
   redirect(`/${locale}/bookings/${booking.id}/pay`);
 }
 
