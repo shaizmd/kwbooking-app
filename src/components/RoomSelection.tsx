@@ -36,6 +36,8 @@ interface RoomSelectionProps {
   nights: number;
   checkIn: string;
   checkOut: string;
+  adults?: number;
+  children?: number;
   propertyId: string;
   disabled?: boolean;
 }
@@ -47,6 +49,8 @@ export default function RoomSelection({
   nights,
   checkIn,
   checkOut,
+  adults = 2,
+  children = 0,
   propertyId,
   disabled = false,
 }: RoomSelectionProps) {
@@ -417,16 +421,10 @@ export default function RoomSelection({
             </div>
             <button
               onClick={() => {
-                // Calculate total guests from selected rooms
-                let totalGuests = 0;
                 let totalRooms = 0;
                 Object.entries(selectedRooms).forEach(
                   ([roomTypeId, selection]) => {
                     if (selection.quantity > 0) {
-                      const roomType = roomTypes.find(rt => rt.id === roomTypeId);
-                      if (roomType) {
-                        totalGuests += roomType.maxGuests * selection.quantity;
-                      }
                       totalRooms += selection.quantity;
                     }
                   }
@@ -436,8 +434,8 @@ export default function RoomSelection({
                 const params = new URLSearchParams();
                 params.set("checkIn", checkIn);
                 params.set("checkOut", checkOut);
-                params.set("adults", Math.max(1, totalGuests).toString());
-                params.set("children", "0");
+                params.set("adults", Math.max(1, adults).toString());
+                params.set("children", Math.max(0, children).toString());
                 params.set("rooms", Math.max(1, totalRooms).toString());
                 Object.entries(selectedRooms).forEach(
                   ([roomTypeId, selection]) => {
@@ -448,7 +446,7 @@ export default function RoomSelection({
                     }
                   }
                 );
-                window.location.href = `/properties/${propertyId}/book?${params.toString()}`;
+                window.location.href = `/${locale}/properties/${propertyId}/book?${params.toString()}`;
               }}
               className="btn-primary text-lg px-8 py-4"
             >

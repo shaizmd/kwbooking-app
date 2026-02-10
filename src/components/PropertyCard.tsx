@@ -57,10 +57,39 @@ interface PropertyCardProps {
   index?: number;
   userId?: string | null;
   isInWishlist?: boolean;
+  checkIn?: string;
+  checkOut?: string;
+  adults?: string;
+  children?: string;
+  rooms?: string;
 }
 
-export function PropertyCard({ property, pricing, isSoldOut, locale, index = 0, userId, isInWishlist = false }: PropertyCardProps) {
+export function PropertyCard({
+  property,
+  pricing,
+  isSoldOut,
+  locale,
+  index = 0,
+  userId,
+  isInWishlist = false,
+  checkIn,
+  checkOut,
+  adults,
+  children,
+  rooms,
+}: PropertyCardProps) {
   const coverImage = property.images[0];
+  const searchParams = new URLSearchParams();
+
+  if (checkIn) searchParams.set("checkIn", checkIn);
+  if (checkOut) searchParams.set("checkOut", checkOut);
+  if (adults) searchParams.set("adults", adults);
+  if (children) searchParams.set("children", children);
+  if (rooms) searchParams.set("rooms", rooms);
+
+  const href = searchParams.toString()
+    ? `/${locale}/properties/${property.id}?${searchParams.toString()}`
+    : `/${locale}/properties/${property.id}`;
   
   return (
     <motion.div
@@ -69,7 +98,7 @@ export function PropertyCard({ property, pricing, isSoldOut, locale, index = 0, 
       transition={{ duration: 0.2, delay: index * 0.05 }}
     >
       <Link
-        href={`/${locale}/properties/${property.id}`}
+        href={href}
         className="block group"
       >
         <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-gray-200">

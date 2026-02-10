@@ -205,6 +205,8 @@ export default async function PropertyDetailsPage({
   const checkOutBase = new Date();
   checkOutBase.setDate(checkOutBase.getDate() + nights);
   const defaultCheckOut = checkOut || checkOutBase.toISOString().split("T")[0];
+  const adultsCount = Math.max(1, Number.parseInt(adults ?? "2", 10) || 2);
+  const childrenCount = Math.max(0, Number.parseInt(children ?? "0", 10) || 0);
 
   return (
     <div className="bg-white min-h-screen">
@@ -558,6 +560,8 @@ export default async function PropertyDetailsPage({
               nights={nights}
               checkIn={defaultCheckIn}
               checkOut={defaultCheckOut}
+              adults={adultsCount}
+              children={childrenCount}
               propertyId={property.id}
               disabled={isSoldOut}
             />

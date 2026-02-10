@@ -242,6 +242,11 @@ export default async function PublicPropertiesPage({
                     index={index}
                     userId={userId}
                     isInWishlist={wishlistPropertyIds.includes(item.property.id)}
+                    checkIn={checkIn}
+                    checkOut={checkOut}
+                    adults={adults}
+                    children={children}
+                    rooms={rooms}
                   />
                 ))}
               </div>

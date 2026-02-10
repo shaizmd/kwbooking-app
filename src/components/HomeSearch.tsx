@@ -1,13 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DayPicker, DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import "react-day-picker/style.css";
 
 interface HomeSearchProps {
   locale: string;
+}
+
+type SavedHomeSearchState = {
+  checkIn?: string;
+  checkOut?: string;
+  adults?: number;
+  children?: number;
+  rooms?: number;
+};
+
+const HOME_SEARCH_STORAGE_KEY = "home_search_state_v1";
+
+function clampInt(value: unknown, min: number, max: number, fallback: number) {
+  const n =
+    typeof value === "number"
+      ? value
+      : typeof value === "string"
+      ? Number.parseInt(value, 10)
+      : Number.NaN;
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(max, Math.max(min, n));
+}
+
+function safeParseYmd(dateStr?: string) {
+  if (!dateStr) return undefined;
+  const d = parseISO(dateStr);
+  return isValid(d) ? d : undefined;
 }
 
 export default function HomeSearch({ locale }: HomeSearchProps) {
@@ -19,6 +46,45 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
   const [rooms, setRooms] = useState(1);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showGuestsPalette, setShowGuestsPalette] = useState(false);
+
+  // Load last used values (so going back/refresh doesn't reset to 2 guests).
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(HOME_SEARCH_STORAGE_KEY);
+      if (!raw) return;
+      const saved = JSON.parse(raw) as SavedHomeSearchState;
+
+      const from = safeParseYmd(saved.checkIn);
+      const to = safeParseYmd(saved.checkOut);
+      if (from && to && to > from) {
+        setRange({ from, to });
+      }
+
+      setAdults(clampInt(saved.adults, 1, 30, 2));
+      setChildren(clampInt(saved.children, 0, 30, 0));
+      setRooms(clampInt(saved.rooms, 1, 10, 1));
+    } catch {
+      // ignore
+    }
+    // run once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist whenever user changes inputs.
+  useEffect(() => {
+    try {
+      const payload: SavedHomeSearchState = {
+        checkIn: range?.from ? format(range.from, "yyyy-MM-dd") : undefined,
+        checkOut: range?.to ? format(range.to, "yyyy-MM-dd") : undefined,
+        adults,
+        children,
+        rooms,
+      };
+      window.localStorage.setItem(HOME_SEARCH_STORAGE_KEY, JSON.stringify(payload));
+    } catch {
+      // ignore
+    }
+  }, [range?.from, range?.to, adults, children, rooms]);
 
   const handleDateSelect = (selectedRange: DateRange | undefined) => {
     // If we already have a complete range (both from and to), reset and start new selection
@@ -33,7 +99,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
     }
   };
 
-  const totalGuests = adults + children;
+  const totalGuests = useMemo(() => adults + children, [adults, children]);
 
   const handleSearch = () => {
     if (range?.from && range?.to) {
@@ -64,6 +130,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
               setShowCalendar(!showCalendar);
               setShowGuestsPalette(false);
             }}
+            type="button"
             className="group relative px-6 py-4 text-left rounded-full hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50"
           >
             <div className="flex flex-col">
@@ -81,6 +148,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
               setShowCalendar(!showCalendar);
               setShowGuestsPalette(false);
             }}
+            type="button"
             className="group relative px-6 py-4 text-left rounded-full hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50"
           >
             <div className="flex flex-col">
@@ -98,6 +166,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
               setShowGuestsPalette(!showGuestsPalette);
               setShowCalendar(false);
             }}
+            type="button"
             className="group relative px-6 py-4 text-left rounded-full hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50"
           >
             <div className="flex flex-col">
@@ -112,6 +181,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
           <button
             onClick={handleSearch}
             disabled={!range?.from || !range?.to}
+            type="button"
             className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white rounded-r-full px-8 h-full flex items-center justify-center gap-2 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-lg disabled:shadow-none cursor-pointer"
             style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
           >
@@ -146,6 +216,26 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 numberOfMonths={2}
                 className="rdp-compact"
               />
+
+              <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setRange(undefined)}
+                  className="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  Clear
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCalendar(false)}
+                  disabled={!range?.from || !range?.to}
+                  className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50"
+                  style={{ backgroundColor: "var(--red)" }}
+                >
+                  Done
+                </button>
+              </div>
             </div>
           </div>
         </>
@@ -171,6 +261,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 <h3 className="text-base font-semibold text-red-600">Travelers</h3>
                 <button 
                   onClick={() => setShowGuestsPalette(false)}
+                  type="button"
                   className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
                 >
                   <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -187,8 +278,9 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <button
-                    onClick={() => setRooms(Math.max(1, rooms - 1))}
+                    onClick={() => setRooms((r) => Math.max(1, r - 1))}
                     disabled={rooms <= 1}
+                    type="button"
                     className="w-9 h-9 rounded-full border-2 border-red-600 text-red-600 flex items-center justify-center hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -197,8 +289,9 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                   </button>
                   <span className="text-base font-semibold text-gray-900 min-w-[24px] text-center">{rooms}</span>
                   <button
-                    onClick={() => setRooms(Math.min(10, rooms + 1))}
+                    onClick={() => setRooms((r) => Math.min(10, r + 1))}
                     disabled={rooms >= 10}
+                    type="button"
                     className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,8 +309,9 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <button
-                    onClick={() => setAdults(Math.max(1, adults - 1))}
+                    onClick={() => setAdults((a) => Math.max(1, a - 1))}
                     disabled={adults <= 1}
+                    type="button"
                     className="w-9 h-9 rounded-full border-2 border-red-600 text-red-600 flex items-center justify-center hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +320,8 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                   </button>
                   <span className="text-base font-semibold text-gray-900 min-w-[24px] text-center">{adults}</span>
                   <button
-                    onClick={() => setAdults(adults + 1)}
+                    onClick={() => setAdults((a) => a + 1)}
+                    type="button"
                     className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,8 +339,9 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 </div>
                 <div className="flex items-center gap-2.5">
                   <button
-                    onClick={() => setChildren(Math.max(0, children - 1))}
+                    onClick={() => setChildren((c) => Math.max(0, c - 1))}
                     disabled={children <= 0}
+                    type="button"
                     className="w-9 h-9 rounded-full border-2 border-red-600 text-red-600 flex items-center justify-center hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +350,8 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                   </button>
                   <span className="text-base font-semibold text-gray-900 min-w-[24px] text-center">{children}</span>
                   <button
-                    onClick={() => setChildren(children + 1)}
+                    onClick={() => setChildren((c) => c + 1)}
+                    type="button"
                     className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -267,6 +364,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
               {/* Apply Button */}
               <button
                 onClick={handleApplyGuests}
+                type="button"
                 className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-6 rounded-lg transition-colors"
               >
                 APPLY
