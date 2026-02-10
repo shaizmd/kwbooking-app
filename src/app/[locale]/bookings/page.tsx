@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth/require-role";
 import { getTranslations } from "next-intl/server";
 import Image from "next/image";
@@ -13,8 +14,13 @@ export default async function CustomerBookingsPage({
   const { locale } = await params;
   const t = await getTranslations("myBookings");
 
-  // Require CUSTOMER role
-  const user = await requireRole("CUSTOMER");
+  // Require CUSTOMER role (redirect to login if not authenticated)
+  let user;
+  try {
+    user = await requireRole("CUSTOMER");
+  } catch (err) {
+    redirect(`/${locale}/login?redirect=${encodeURIComponent(`/${locale}/bookings`)}`);
+  }
 
   // Get all bookings for customer
   const bookings = await prisma.booking.findMany({
