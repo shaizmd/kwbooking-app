@@ -221,7 +221,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 <button
                   type="button"
                   onClick={() => setRange(undefined)}
-                  className="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                  className="px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
                 >
                   Clear
                 </button>
@@ -230,7 +230,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                   type="button"
                   onClick={() => setShowCalendar(false)}
                   disabled={!range?.from || !range?.to}
-                  className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50"
+                  className="px-5 py-2 text-sm font-semibold text-white rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
                   style={{ backgroundColor: "var(--red)" }}
                 >
                   Done

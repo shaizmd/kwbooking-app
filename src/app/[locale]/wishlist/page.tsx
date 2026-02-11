@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
+import { redirect } from "next/navigation";
 import { formatCurrency } from "@/lib/format";
 import Link from "next/link";
 import Image from "next/image";
@@ -13,7 +14,12 @@ export default async function WishlistPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations("wishlist");
-  const user = await requireRole("CUSTOMER");
+  let user;
+  try {
+    user = await requireRole("CUSTOMER");
+  } catch (err) {
+    redirect(`/${locale}/login`);
+  }
 
   const wishlistItems = await prisma.wishlist.findMany({
     where: {

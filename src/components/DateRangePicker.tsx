@@ -197,7 +197,7 @@ export default function DateRangePicker({
                     setRange(undefined);
                     setShowCalendar(false);
                   }}
-                  className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded"
+                  className="px-3 py-1 text-sm text-gray-600 hover:bg-gray-100 rounded cursor-pointer"
                 >
                   Clear
                 </button>
@@ -205,7 +205,7 @@ export default function DateRangePicker({
                 <button
                   onClick={() => setShowCalendar(false)}
                   disabled={!range?.from || !range?.to}
-                  className="px-4 py-1 text-sm bg-blue-600 text-white rounded"
+                  className="px-4 py-1 text-sm bg-blue-600 text-white rounded cursor-pointer"
                 >
                   Done
                 </button>
