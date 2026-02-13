@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import {
   publishProperty,
   unpublishProperty,
@@ -206,6 +207,7 @@ export default async function EditPropertyPage({
                   action={async () => {
                     "use server";
                     await publishProperty(property.id);
+                    redirect("/host/properties");
                   }}
                 >
                   <button
@@ -220,6 +222,7 @@ export default async function EditPropertyPage({
                   action={async () => {
                     "use server";
                     await unpublishProperty(property.id);
+                    redirect("/host/properties");
                   }}
                 >
                   <button

@@ -57,6 +57,33 @@ export async function PATCH(
       );
     }
 
+    // Cross-field validation: ensure maxGuests is not less than baseGuests.
+    // Because this is a PATCH, either value might be omitted, so we
+    // compare the incoming values with the existing ones.
+    const effectiveBaseGuests =
+      parsed.data.baseGuests !== undefined
+        ? parsed.data.baseGuests
+        : property.baseGuests;
+    const effectiveMaxGuests =
+      parsed.data.maxGuests !== undefined
+        ? parsed.data.maxGuests
+        : property.maxGuests;
+
+    if (effectiveMaxGuests < effectiveBaseGuests) {
+      return NextResponse.json(
+        {
+          error: "Invalid property data",
+          details: [
+            {
+              path: ["maxGuests"],
+              message: "Max guests cannot be less than base guests",
+            },
+          ],
+        },
+        { status: 400 }
+      );
+    }
+
     const updatedProperty = await prisma.property.update({
       where: { id },
       data: parsed.data,

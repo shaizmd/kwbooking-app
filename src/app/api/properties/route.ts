@@ -4,9 +4,9 @@ import { verifyAuth } from "@/lib/auth/api";
 import { z } from "zod";
 
 const propertySchema = z.object({
-  title: z.string().min(5),
-  description: z.string().min(20),
-  location: z.string().min(2),
+  title: z.string().min(5, { message: "Title must be at least 5 characters long" }),
+  description: z.string().min(20, { message: "Description must be at least 20 characters long" }),
+  location: z.string().min(2, { message: "Location must be at least 2 characters long" }),
   propertyType: z.string(),
   basePrice: z.number().positive(),
   baseGuests: z.number().int().positive(),
@@ -38,6 +38,22 @@ export async function POST(request: NextRequest) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Invalid property data", details: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+
+    // Cross-field validation: ensure maxGuests is not less than baseGuests
+    if (parsed.data.maxGuests < parsed.data.baseGuests) {
+      return NextResponse.json(
+        {
+          error: "Invalid property data",
+          details: [
+            {
+              path: ["maxGuests"],
+              message: "Max guests cannot be less than base guests",
+            },
+          ],
+        },
         { status: 400 }
       );
     }

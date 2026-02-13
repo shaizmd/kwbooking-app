@@ -63,13 +63,29 @@ export default async function AdminSettingsPage() {
           alignItems: "center",
           gap: "8px",
         }}>
-          <span style={{ fontSize: "20px" }}>🛑</span>
+          <span
+            style={{
+              width: "24px",
+              height: "24px",
+              borderRadius: "999px",
+              backgroundColor: "rgba(211, 47, 47, 0.08)",
+              color: "#d32f2f",
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontWeight: 700,
+              fontSize: "14px",
+            }}
+            aria-hidden="true"
+          >
+            !
+          </span>
           Emergency Kill Switches
         </h2>
         
         <div style={{ marginBottom: "16px", padding: "12px", background: "#fff3cd", border: "1px solid #ffc107", borderRadius: "4px" }}>
           <p style={{ fontSize: "14px", color: "#856404" }}>
-            ⚠️ <strong>Warning:</strong> These controls immediately affect all users. Use only in emergencies.
+            <strong>Warning:</strong> These controls immediately affect all users. Use only in emergencies.
           </p>
         </div>
 
@@ -190,11 +206,7 @@ export default async function AdminSettingsPage() {
           fontSize: "18px",
           fontWeight: "600",
           marginBottom: "16px",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
         }}>
-          <span style={{ fontSize: "20px" }}>⏰</span>
           Automated Jobs (Last 24 Hours)
         </h2>
 
@@ -265,7 +277,7 @@ export default async function AdminSettingsPage() {
                 cursor: "pointer",
               }}
             >
-              🔄 Run All Jobs Manually
+              Run All Jobs Manually
             </button>
           </form>
         </div>
@@ -282,11 +294,7 @@ export default async function AdminSettingsPage() {
           fontSize: "18px",
           fontWeight: "600",
           marginBottom: "16px",
-          display: "flex",
-          alignItems: "center",
-          gap: "8px",
         }}>
-          <span style={{ fontSize: "20px" }}>📊</span>
           System Status
         </h2>
 

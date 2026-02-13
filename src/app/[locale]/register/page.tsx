@@ -136,7 +136,7 @@ export default function RegisterPage() {
                   maxLength={15}
                   pattern="[0-9]{8,15}"
                   title="Enter 8 to 15 digits"
-                  placeholder="12345678"
+                  placeholder="Enter Mobile Number"
                   className="w-full px-4 py-3.5 border rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-opacity-50"
                   style={{ 
                     borderColor: '#e5e7eb',

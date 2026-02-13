@@ -158,7 +158,8 @@ export async function createBooking({
             baseGuests: property.baseGuests,
             extraGuestPrice: Number(property.extraGuestPrice || 0),
           });
-          subtotal = pricing.subtotal;
+          // Use total (base + extra guests) as the pre-tax subtotal
+          subtotal = pricing.total;
         }
       } else {
         // No room selections - use base price
@@ -169,7 +170,8 @@ export async function createBooking({
           baseGuests: property.baseGuests,
           extraGuestPrice: Number(property.extraGuestPrice || 0),
         });
-        subtotal = pricing.subtotal;
+        // Use total (base + extra guests) as the pre-tax subtotal
+        subtotal = pricing.total;
       }
 
       const taxRate = 0.05; // 5% tax

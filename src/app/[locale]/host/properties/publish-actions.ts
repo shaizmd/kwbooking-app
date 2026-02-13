@@ -28,7 +28,9 @@ export async function publishProperty(propertyId: string) {
     },
   });
 
-  if (!activeSubscription) {
+  // In production, enforce active subscription.
+  // In development, allow publishing without a subscription to simplify testing.
+  if (!activeSubscription && process.env.NODE_ENV === "production") {
     throw new Error("Active subscription required to publish");
   }
 
@@ -37,7 +39,9 @@ export async function publishProperty(propertyId: string) {
     where: { propertyId },
   });
 
-  if (imageCount === 0) {
+  // In production, enforce at least one image.
+  // In development, allow publishing without images for easier testing.
+  if (imageCount === 0 && process.env.NODE_ENV === "production") {
     throw new Error("At least one image is required to publish");
   }
 

@@ -8,15 +8,31 @@ export default function NewPropertyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [propertyType, setPropertyType] = useState<string>("APARTMENT");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setFieldErrors({});
 
     const formData = new FormData(e.currentTarget);
 
     try {
+      const baseGuests = Number(formData.get("baseGuests"));
+      const maxGuests = Number(formData.get("maxGuests"));
+
+      // Quick client-side validation for guest capacity before hitting the API
+      if (maxGuests < baseGuests) {
+        setFieldErrors({
+          maxGuests: ["Max guests cannot be less than base guests"],
+        });
+        setError("Some fields have errors. Please review the highlighted inputs below.");
+        setLoading(false);
+        return;
+      }
+
       const response = await fetch("/api/properties", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -26,25 +42,57 @@ export default function NewPropertyPage() {
           location: formData.get("location"),
           propertyType: formData.get("propertyType"),
           basePrice: Number(formData.get("basePrice")),
-          baseGuests: Number(formData.get("baseGuests")),
-          maxGuests: Number(formData.get("maxGuests")),
+          baseGuests,
+          maxGuests,
           extraGuestPrice: Number(formData.get("extraGuestPrice") || 0),
           bedrooms: Number(formData.get("bedrooms")),
           bathrooms: Number(formData.get("bathrooms")),
           beds: Number(formData.get("beds")),
           areaSize: formData.get("areaSize") ? Number(formData.get("areaSize")) : undefined,
-          floor: formData.get("floor") ? Number(formData.get("floor")) : undefined,
+          // Only send floor for apartments; for other property types
+          // it should be ignored/disabled.
+          floor:
+            (formData.get("propertyType") === "APARTMENT" && formData.get("floor"))
+              ? Number(formData.get("floor"))
+              : undefined,
           checkInTime: formData.get("checkInTime"),
           checkOutTime: formData.get("checkOutTime"),
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to create property");
+        // If the API sent field-level validation details (from Zod),
+        // map them into a field -> messages structure so we can
+        // highlight the exact inputs that are invalid.
+        if (data?.details && Array.isArray(data.details)) {
+          const nextFieldErrors: Record<string, string[]> = {};
+
+          for (const issue of data.details as Array<{ path?: unknown[]; message?: string }>) {
+            const path = Array.isArray(issue.path) ? issue.path : [];
+            const field = typeof path[0] === "string" ? (path[0] as string) : undefined;
+            const message = typeof issue.message === "string" ? issue.message : undefined;
+
+            if (!field || !message) continue;
+
+            if (!nextFieldErrors[field]) {
+              nextFieldErrors[field] = [];
+            }
+            nextFieldErrors[field].push(message);
+          }
+
+          if (Object.keys(nextFieldErrors).length > 0) {
+            setFieldErrors(nextFieldErrors);
+            setError("Some fields have errors. Please review the highlighted inputs below.");
+            setLoading(false);
+            return;
+          }
+        }
+
+        throw new Error(data?.error || "Failed to create property");
       }
 
-      const data = await response.json();
       router.push(`/host/properties/${data.id}`);
     } catch (err: unknown) {
       const error = err as Error;
@@ -93,9 +141,14 @@ export default function NewPropertyPage() {
                 id="title"
                 name="title"
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.title ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="e.g., Luxury Apartment in Salmiya"
               />
+              {fieldErrors.title && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.title.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -106,7 +159,19 @@ export default function NewPropertyPage() {
                 id="propertyType"
                 name="propertyType"
                 required
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                value={propertyType}
+                onChange={(e) => {
+                  setPropertyType(e.target.value);
+                  // Clear any floor-related errors when switching away
+                  // from apartment, since the field will be disabled.
+                  if (e.target.value !== "APARTMENT" && fieldErrors.floor) {
+                    const { floor, ...rest } = fieldErrors;
+                    setFieldErrors(rest);
+                  }
+                }}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.propertyType ? "border-red-500" : "border-gray-300"
+                }`}
               >
                 <option value="APARTMENT">Apartment</option>
                 <option value="VILLA">Villa</option>
@@ -114,6 +179,9 @@ export default function NewPropertyPage() {
                 <option value="HOTEL">Hotel Room</option>
                 <option value="RESORT">Resort</option>
               </select>
+              {fieldErrors.propertyType && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.propertyType.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -125,9 +193,19 @@ export default function NewPropertyPage() {
                 name="description"
                 required
                 rows={4}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.description ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Describe your property, amenities, and what makes it special..."
               />
+              {fieldErrors.description && (
+                <p
+                  className="text-sm text-red-600 mt-1"
+                  style={{ color: "var(--red)" }}
+                >
+                  {fieldErrors.description.join(" ")}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -144,10 +222,15 @@ export default function NewPropertyPage() {
               id="location"
               name="location"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                fieldErrors.location ? "border-red-500" : "border-gray-300"
+              }`}
               placeholder="e.g., Salmiya, Kuwait City"
             />
             <p className="text-sm text-gray-600 mt-1">Enter city and area information</p>
+            {fieldErrors.location && (
+              <p className="text-sm text-red-600 mt-1">{fieldErrors.location.join(" ")}</p>
+            )}
           </div>
         </div>
 
@@ -166,8 +249,13 @@ export default function NewPropertyPage() {
                 required
                 min="1"
                 defaultValue="1"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.bedrooms ? "border-red-500" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.bedrooms && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.bedrooms.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -181,8 +269,13 @@ export default function NewPropertyPage() {
                 required
                 min="1"
                 defaultValue="1"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.bathrooms ? "border-red-500" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.bathrooms && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.bathrooms.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -196,8 +289,13 @@ export default function NewPropertyPage() {
                 required
                 min="1"
                 defaultValue="1"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.beds ? "border-red-500" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.beds && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.beds.join(" ")}</p>
+              )}
             </div>
           </div>
 
@@ -211,9 +309,14 @@ export default function NewPropertyPage() {
                 id="areaSize"
                 name="areaSize"
                 min="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.areaSize ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Optional"
               />
+              {fieldErrors.areaSize && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.areaSize.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -225,10 +328,20 @@ export default function NewPropertyPage() {
                 id="floor"
                 name="floor"
                 min="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
-                placeholder="Optional"
+                disabled={propertyType !== "APARTMENT"}
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.floor ? "border-red-500" : "border-gray-300"
+                } ${propertyType !== "APARTMENT" ? "bg-gray-100 cursor-not-allowed" : ""}`}
+                placeholder={propertyType === "APARTMENT" ? "Optional" : "Only applicable for apartments"}
               />
-              <p className="text-xs text-gray-600 mt-1">For apartments</p>
+              <p className="text-xs text-gray-600 mt-1">
+                {propertyType === "APARTMENT"
+                  ? "Only needed for apartments"
+                  : "Floor number applies only to apartments and is disabled for this property type"}
+              </p>
+              {fieldErrors.floor && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.floor.join(" ")}</p>
+              )}
             </div>
           </div>
         </div>
@@ -248,9 +361,14 @@ export default function NewPropertyPage() {
                 required
                 min="1"
                 defaultValue="2"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.baseGuests ? "border-red-500" : "border-gray-300"
+                }`}
               />
               <p className="text-xs text-gray-600 mt-1">Included in base price</p>
+              {fieldErrors.baseGuests && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.baseGuests.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -264,9 +382,14 @@ export default function NewPropertyPage() {
                 required
                 min="1"
                 defaultValue="4"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.maxGuests ? "border-red-500" : "border-gray-300"
+                }`}
               />
               <p className="text-xs text-gray-600 mt-1">Maximum capacity</p>
+              {fieldErrors.maxGuests && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.maxGuests.join(" ")}</p>
+              )}
             </div>
           </div>
         </div>
@@ -286,10 +409,15 @@ export default function NewPropertyPage() {
                 required
                 min="0"
                 step="0.001"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.basePrice ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="0.000"
               />
               <p className="text-xs text-gray-600 mt-1">For base guest count</p>
+              {fieldErrors.basePrice && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.basePrice.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -303,10 +431,15 @@ export default function NewPropertyPage() {
                 min="0"
                 step="0.001"
                 defaultValue="0"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.extraGuestPrice ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="0.000"
               />
               <p className="text-xs text-gray-600 mt-1">Per additional guest</p>
+              {fieldErrors.extraGuestPrice && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.extraGuestPrice.join(" ")}</p>
+              )}
             </div>
           </div>
 
@@ -320,8 +453,13 @@ export default function NewPropertyPage() {
                 id="checkInTime"
                 name="checkInTime"
                 defaultValue="14:00"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.checkInTime ? "border-red-500" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.checkInTime && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.checkInTime.join(" ")}</p>
+              )}
             </div>
 
             <div>
@@ -333,8 +471,13 @@ export default function NewPropertyPage() {
                 id="checkOutTime"
                 name="checkOutTime"
                 defaultValue="11:00"
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow"
+                className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[var(--red)] focus:border-transparent transition-shadow ${
+                  fieldErrors.checkOutTime ? "border-red-500" : "border-gray-300"
+                }`}
               />
+              {fieldErrors.checkOutTime && (
+                <p className="text-sm text-red-600 mt-1">{fieldErrors.checkOutTime.join(" ")}</p>
+              )}
             </div>
           </div>
         </div>

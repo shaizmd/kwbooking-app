@@ -6,6 +6,7 @@ import { createBooking } from "./actions";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
 import Image from "next/image";
+import { calculateBookingPrice } from "@/lib/booking/calculate-price";
 
 export default async function BookingPage({
   params,
@@ -39,10 +40,6 @@ export default async function BookingPage({
     payload = await verifyAccessToken(token);
   } catch {
     redirect(`/${locale}/login?redirect=/${locale}/properties/${id}/book`);
-  }
-
-  if (payload.role !== "CUSTOMER") {
-    redirect(`/${locale}/properties/${id}`);
   }
 
   // Get user details
@@ -156,7 +153,15 @@ export default async function BookingPage({
 
   // Fallback to base price if no rooms selected
   if (selectedRooms.length === 0) {
-    subtotal = Number(property.basePrice) * nights;
+    const pricing = calculateBookingPrice({
+      basePrice: Number(property.basePrice),
+      nights,
+      guests,
+      baseGuests: property.baseGuests,
+      extraGuestPrice: Number(property.extraGuestPrice || 0),
+    });
+    // Use the total (base + extra guests) as the pre-tax subtotal shown in the UI
+    subtotal = pricing.total;
   }
 
   const taxRate = 0.05; // 5% tax

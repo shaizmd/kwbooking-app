@@ -231,10 +231,27 @@ export default async function PublicPropertiesPage({
                   <PropertyCard 
                     key={item.property.id}
                     property={{
-                      ...item.property,
+                      id: item.property.id,
+                      title: item.property.title,
+                      titleAr: item.property.titleAr,
+                      description: item.property.description,
+                      location: item.property.location,
                       basePrice: Number(item.property.basePrice),
+                      currency: item.property.currency,
+                      baseGuests: item.property.baseGuests,
+                      maxGuests: item.property.maxGuests,
                       extraGuestPrice: item.property.extraGuestPrice ? Number(item.property.extraGuestPrice) : null,
+                      bedrooms: item.property.bedrooms,
+                      bathrooms: item.property.bathrooms,
+                      beds: item.property.beds,
+                      areaSize: item.property.areaSize,
+                      propertyType: item.property.propertyType,
                       averageRating: item.property.averageRating ? Number(item.property.averageRating) : null,
+                      reviewCount: item.property.reviewCount,
+                      featured: item.property.featured,
+                      instantBooking: item.property.instantBooking,
+                      images: item.property.images,
+                      amenities: item.property.amenities,
                     }}
                     pricing={item.pricing}
                     isSoldOut={item.isSoldOut}
