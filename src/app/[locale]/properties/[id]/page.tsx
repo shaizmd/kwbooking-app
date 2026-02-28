@@ -248,40 +248,42 @@ export default async function PropertyDetailsPage({
 
         {/* Property Title & Location */}
         <div className="mb-4">
-          <div className="flex items-start justify-between gap-4 mb-3">
-            <div className="flex-1">
-              <div className="flex items-center gap-3 mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">
+          <div className="flex items-start justify-between gap-2 md:gap-4 mb-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">
                   {property.title}
                 </h1>
                 {property.featured && (
-                  <span className="px-3 py-1.5 bg-blue-600 text-white text-sm font-bold rounded shadow-sm">
-                    ⭐ Featured Property
+                  <span className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-600 text-white text-xs sm:text-sm font-bold rounded shadow-sm inline-block w-fit">
+                    ⭐ Featured
                   </span>
                 )}
               </div>
             </div>
             {userId && (
-              <WishlistButton
-                propertyId={property.id}
-                locale={locale}
-                isInWishlist={isInWishlist}
-              />
+              <div className="flex-shrink-0">
+                <WishlistButton
+                  propertyId={property.id}
+                  locale={locale}
+                  isInWishlist={isInWishlist}
+                />
+              </div>
             )}
           </div>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-4">
-              <a href="#map" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium underline">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-3 sm:gap-4 flex-wrap">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <a href="#map" className="flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium underline text-sm">
+                <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
-                <span className="font-semibold">{property.location}</span> — Show on map
+                <span className="font-semibold break-words">{property.location}</span>
               </a>
               {property.averageRating && property.averageRating > 0 && (
                 <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 text-white px-3 py-2 rounded-lg font-bold" style={{ backgroundColor: 'var(--red)' }}>
-                    <span className="text-base">{property.averageRating.toFixed(1)}</span>
+                  <div className="flex items-center gap-1 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg font-bold text-sm" style={{ backgroundColor: 'var(--red)' }}>
+                    <span>{property.averageRating.toFixed(1)}</span>
                   </div>
                   <div>
                     <div className="text-sm font-bold text-gray-900">
@@ -297,8 +299,8 @@ export default async function PropertyDetailsPage({
           </div>
         </div>
 
-        {/* Image Gallery - booking.com style */}
-        <div className="grid grid-cols-4 gap-2 mb-6 rounded-lg overflow-hidden" style={{ height: '450px' }}>
+        {/* Image Gallery - Responsive */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6 rounded-lg overflow-hidden h-[250px] md:h-[450px]">
           {/* Main Image */}
           <div className="col-span-2 row-span-2 relative">
             {coverImage ? (
@@ -308,6 +310,7 @@ export default async function PropertyDetailsPage({
                 fill
                 className="object-cover hover:brightness-95 transition cursor-pointer"
                 sizes="(max-width: 768px) 100vw, 50vw"
+                priority
               />
             ) : (
               <div className="w-full h-full bg-gray-200 flex items-center justify-center">
@@ -316,9 +319,9 @@ export default async function PropertyDetailsPage({
             )}
           </div>
           
-          {/* Secondary Images Grid */}
-          {otherImages.map((img, idx) => (
-            <div key={img.id} className="relative">
+          {/* Secondary Images Grid - Hidden on Mobile */}
+          {otherImages.slice(0, 2).map((img, idx) => (
+            <div key={img.id} className="relative hidden md:block">
               <Image
                 src={img.imageUrl}
                 alt={`${property.title} - ${idx + 2}`}
@@ -330,13 +333,14 @@ export default async function PropertyDetailsPage({
           ))}
           
           {/* Show all photos button */}
-          {property.images.length > 5 && (
+          {property.images.length > 1 && (
             <div className="absolute bottom-4 right-4">
-              <button className="bg-white border border-gray-900 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-50 transition flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <button className="bg-white border border-gray-900 px-3 md:px-4 py-1.5 md:py-2 rounded-md text-xs md:text-sm font-semibold hover:bg-gray-50 transition flex items-center gap-2">
+                <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                Show all {property.images.length} photos
+                <span className="hidden sm:inline">Show all {property.images.length} photos</span>
+                <span className="sm:hidden">+{property.images.length - 1}</span>
               </button>
             </div>
           )}
@@ -392,21 +396,21 @@ export default async function PropertyDetailsPage({
               </div>
             </div>
 
-            {/* Most Popular Facilities - Booking.com Style */}
+            {/* Most Popular Facilities - Responsive */}
             {property.amenities && property.amenities.length > 0 && (
               <div className="border-b border-gray-200 pb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Most popular facilities</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">\n                  {property.amenities.slice(0, 10).map((amenity) => (
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Most popular facilities</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 md:gap-x-8 gap-y-3">\n                  {property.amenities.slice(0, 10).map((amenity) => (
                     <div key={amenity.id} className="flex items-center gap-3">
                       <div className="text-green-700 flex-shrink-0">
                         {getAmenityIcon(amenity.amenity.icon)}
                       </div>
-                      <span className="text-gray-900 font-medium">{amenity.amenity.name}</span>
+                      <span className="text-gray-900 font-medium text-sm md:text-base">{amenity.amenity.name}</span>
                     </div>
                   ))}
                 </div>
                 {property.amenities.length > 10 && (
-                  <button className="mt-4 font-bold text-sm transition-colors hover:underline" style={{ color: 'var(--red)' }}>
+                  <button className="mt-4 font-bold text-xs md:text-sm transition-colors hover:underline" style={{ color: 'var(--red)' }}>
                     Show all {property.amenities.length} facilities →
                   </button>
                 )}
@@ -423,8 +427,8 @@ export default async function PropertyDetailsPage({
 
             {/* Room Details */}
             <div className="border-b border-gray-200 pb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Property highlights</h2>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4">Property highlights</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-4">
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <div className="text-gray-900 font-semibold mb-1">{property.bedrooms}</div>
                   <div className="text-sm text-gray-600">

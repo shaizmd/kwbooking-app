@@ -122,16 +122,15 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
   return (
     <div className="w-full relative">
       {/* Pill-shaped Search Container */}
-      <div className="bg-white rounded-full shadow-2xl p-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] transition-all duration-300 border border-gray-100">
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_200px_auto] gap-0 items-stretch">
-          {/* Check-in */}
+      <div className="bg-white rounded-2xl md:rounded-full shadow-2xl p-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] transition-all duration-300 border border-gray-100">
+        <div className="flex flex-col md:grid md:grid-cols-[1fr_1fr_1fr_auto] gap-0 items-stretch">{/* Check-in */}
           <button
             onClick={() => {
               setShowCalendar(!showCalendar);
               setShowGuestsPalette(false);
             }}
             type="button"
-            className="group relative px-6 py-4 text-left rounded-full hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50"
+            className="group relative px-4 md:px-6 py-3 md:py-4 text-left rounded-t-2xl md:rounded-l-full md:rounded-tr-none hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100"
           >
             <div className="flex flex-col">
               <span className="text-xs font-semibold text-gray-900 mb-1">Check in</span>
@@ -139,7 +138,6 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 {range?.from ? format(range.from, "MMM dd, yyyy") : "Add dates"}
               </span>
             </div>
-            <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-8 bg-gray-200"></div>
           </button>
 
           {/* Check-out */}
@@ -149,7 +147,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
               setShowGuestsPalette(false);
             }}
             type="button"
-            className="group relative px-6 py-4 text-left rounded-full hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50"
+            className="group relative px-4 md:px-6 py-3 md:py-4 text-left hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100"
           >
             <div className="flex flex-col">
               <span className="text-xs font-semibold text-gray-900 mb-1">Check out</span>
@@ -157,7 +155,6 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                 {range?.to ? format(range.to, "MMM dd, yyyy") : "Add dates"}
               </span>
             </div>
-            <div className="hidden md:block absolute right-0 top-1/2 -translate-y-1/2 w-px h-8 bg-gray-200"></div>
           </button>
 
           {/* Guests - Updated */}
@@ -167,7 +164,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
               setShowCalendar(false);
             }}
             type="button"
-            className="group relative px-6 py-4 text-left rounded-full hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50"
+            className="group relative px-4 md:px-6 py-3 md:py-4 text-left hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 md:border-r border-gray-100"
           >
             <div className="flex flex-col">
               <span className="text-xs font-semibold text-gray-900 mb-1">Travelers</span>
@@ -177,18 +174,17 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
             </div>
           </button>
 
-          {/* Search Button - Half pill, half square */}
+          {/* Search Button - Responsive */}
           <button
             onClick={handleSearch}
             disabled={!range?.from || !range?.to}
             type="button"
-            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 text-white rounded-r-full px-8 h-full flex items-center justify-center gap-2 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-lg disabled:shadow-none cursor-pointer"
-            style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-b-2xl md:rounded-b-none md:rounded-r-full px-6 md:px-8 py-5 md:py-4 flex items-center justify-center gap-2.5 font-bold text-lg md:text-base transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-lg disabled:shadow-none cursor-pointer active:scale-[0.98] mt-2 md:mt-0 md:min-w-35"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            <span className="hidden sm:inline">Search</span>
+            <span>Search</span>
           </button>
         </div>
       </div>
@@ -204,18 +200,20 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
           
           {/* Calendar popup */}
           <div 
-            className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] z-50 border border-gray-100 w-[min(95vw,680px)]" 
+            className="absolute left-0 md:left-1/2 md:-translate-x-1/2 top-full mt-2 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] z-50 border border-gray-100 w-full md:w-[min(95vw,680px)] max-h-[80vh] overflow-y-auto" 
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6">
-              <DayPicker
-                mode="range"
-                selected={range}
-                onSelect={handleDateSelect}
-                disabled={{ before: new Date() }}
-                numberOfMonths={2}
-                className="rdp-compact"
-              />
+            <div className="p-4 md:p-6">
+              <div className="[&_.rdp-months]:flex [&_.rdp-months]:flex-col [&_.rdp-months]:md:flex-row [&_.rdp-month:last-child]:hidden [&_.rdp-month:last-child]:md:block">
+                <DayPicker
+                  mode="range"
+                  selected={range}
+                  onSelect={handleDateSelect}
+                  disabled={{ before: new Date() }}
+                  numberOfMonths={2}
+                  className="rdp-compact"
+                />
+              </div>
 
               <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100">
                 <button
@@ -252,7 +250,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
           
           {/* Guests palette popup */}
           <div 
-            className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] z-50 border border-gray-100 w-[min(90vw,360px)]" 
+            className="absolute left-0 md:right-0 md:left-auto top-full mt-2 bg-white rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.2)] z-50 border border-gray-100 w-full md:w-[min(90vw,360px)]" 
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-5">
@@ -287,7 +285,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                   </button>
-                  <span className="text-base font-semibold text-gray-900 min-w-[24px] text-center">{rooms}</span>
+                  <span className="text-base font-semibold text-gray-900 min-w-6 text-center">{rooms}</span>
                   <button
                     onClick={() => setRooms((r) => Math.min(10, r + 1))}
                     disabled={rooms >= 10}
@@ -318,7 +316,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                   </button>
-                  <span className="text-base font-semibold text-gray-900 min-w-[24px] text-center">{adults}</span>
+                  <span className="text-base font-semibold text-gray-900 min-w-6 text-center">{adults}</span>
                   <button
                     onClick={() => setAdults((a) => a + 1)}
                     type="button"
@@ -348,7 +346,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
                     </svg>
                   </button>
-                  <span className="text-base font-semibold text-gray-900 min-w-[24px] text-center">{children}</span>
+                  <span className="text-base font-semibold text-gray-900 min-w-6 text-center">{children}</span>
                   <button
                     onClick={() => setChildren((c) => c + 1)}
                     type="button"

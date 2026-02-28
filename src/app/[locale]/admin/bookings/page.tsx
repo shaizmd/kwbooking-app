@@ -35,7 +35,8 @@ export default async function AdminBookingsPage() {
         <p className="text-gray-600">Total bookings: {bookings.length}</p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -164,6 +165,101 @@ export default async function AdminBookingsPage() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="lg:hidden space-y-4">
+        {bookings.map((booking) => {
+          const nights = Math.ceil(
+            (booking.checkOut.getTime() - booking.checkIn.getTime()) /
+              (1000 * 60 * 60 * 24)
+          );
+
+          return (
+            <div key={booking.id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-900">{booking.property.title}</h3>
+                  <p className="text-xs text-gray-500 font-mono mt-1">
+                    #{booking.id.slice(0, 8).toUpperCase()}
+                  </p>
+                </div>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${
+                    booking.status === "CONFIRMED"
+                      ? "bg-green-100 text-green-800"
+                      : booking.status === "PENDING"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : booking.status === "CANCELLED"
+                      ? "bg-red-100 text-red-800"
+                      : booking.status === "COMPLETED"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  {booking.status}
+                </span>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div>
+                  <span className="text-gray-500">Customer:</span>
+                  <span className="ml-2 text-gray-900">
+                    {booking.customer.fullName || "Not provided"}
+                  </span>
+                  <div className="text-xs text-gray-500 ml-2">{booking.customer.email}</div>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">Dates:</span>
+                  <span className="ml-2 text-gray-900">
+                    {booking.checkIn.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}{" "}
+                    -{" "}
+                    {booking.checkOut.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                  <div className="text-xs text-gray-500 ml-2">
+                    {nights} {nights === 1 ? "night" : "nights"} • {booking.guests} guests
+                  </div>
+                </div>
+
+                <div>
+                  <span className="text-gray-500">Amount:</span>
+                  <span className="ml-2 text-gray-900 font-semibold">
+                    {Number(booking.totalAmount).toFixed(3)} {booking.currency}
+                  </span>
+                </div>
+
+                {booking.payment && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500">Payment:</span>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        booking.payment.status === "SUCCESS"
+                          ? "bg-green-100 text-green-800"
+                          : booking.payment.status === "PENDING"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {booking.payment.status}
+                    </span>
+                    <span className="text-xs text-gray-500">({booking.payment.provider})</span>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-gray-100 text-xs text-gray-500">
+                  Created: {booking.createdAt.toLocaleDateString()}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

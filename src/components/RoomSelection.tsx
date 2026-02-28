@@ -125,8 +125,8 @@ export default function RoomSelection({
 
   return (
     <div className="space-y-6">
-      {/* Table Header */}
-      <div className="text-white rounded-t-lg overflow-hidden" style={{ backgroundColor: 'var(--red)' }}>
+      {/* Table Header - Desktop Only */}
+      <div className="hidden lg:block text-white rounded-t-lg overflow-hidden" style={{ backgroundColor: 'var(--red)' }}>
         <div className="grid grid-cols-12 gap-4 px-6 py-4 font-semibold">
           <div className="col-span-3">Room type</div>
           <div className="col-span-2">Number of guests</div>
@@ -136,6 +136,12 @@ export default function RoomSelection({
           <div className="col-span-3">Your choice</div>
           <div className="col-span-2">Select rooms</div>
         </div>
+      </div>
+
+      {/* Mobile Header */}
+      <div className="lg:hidden bg-red-700 text-white rounded-t-lg px-4 py-3">
+        <h2 className="text-lg font-bold">Availability</h2>
+        <p className="text-sm text-red-100 mt-1">Select your room and package</p>
       </div>
 
       {/* Room Types */}
@@ -188,21 +194,23 @@ export default function RoomSelection({
               {roomType.packages.map((pkg) => (
                 <div
                   key={pkg.id}
-                  className="grid grid-cols-12 gap-4 p-6 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
+                  className="bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow"
                 >
-                  {/* Room Type Column (Empty for packages) */}
-                  <div className="col-span-3"></div>
+                  {/* Desktop Grid Layout */}
+                  <div className="hidden lg:grid grid-cols-12 gap-4 p-6">
+                    {/* Room Type Column (Empty for packages) */}
+                    <div className="col-span-3"></div>
 
-                  {/* Guests Column */}
-                  <div className="col-span-2 flex items-start pt-2">
-                    <div className="flex gap-1">
-                      {getGuestIcon(roomType.maxGuests)}
+                    {/* Guests Column */}
+                    <div className="col-span-2 flex items-start pt-2">
+                      <div className="flex gap-1">
+                        {getGuestIcon(roomType.maxGuests)}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Price Column */}
-                  <div className="col-span-2">
-                    <div className="space-y-1">
+                    {/* Price Column */}
+                    <div className="col-span-2">
+                      <div className="space-y-1">
                       {pkg.originalPrice && (
                         <div className="text-sm text-gray-500 line-through font-semibold">
                           {formatCurrency(pkg.originalPrice, currency, locale)}
@@ -225,11 +233,11 @@ export default function RoomSelection({
                           ⚡ {pkg.dealLabel}
                         </div>
                       )}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Benefits Column */}
-                  <div className="col-span-3">
+                    {/* Benefits Column */}
+                    <div className="col-span-3">
                     <div className="space-y-2">
                       {pkg.benefits.map((benefit, idx) => (
                         <div key={idx} className="flex items-start gap-2">
@@ -337,10 +345,10 @@ export default function RoomSelection({
                         </div>
                       )}
                     </div>
-                  </div>
+                    </div>
 
-                  {/* Selection Column */}
-                  <div className="col-span-2">
+                    {/* Selection Column */}
+                    <div className="col-span-2">
                     <div className="space-y-3">
                       <select
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent" style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
@@ -397,6 +405,154 @@ export default function RoomSelection({
                           </div>
                         )}
                     </div>
+                    </div>
+                  </div>
+
+                  {/* Mobile Card Layout */}
+                  <div className="lg:hidden p-4 space-y-4">
+                    {/* Guests Info */}
+                    <div className="flex items-center gap-2 pb-3 border-b border-gray-200">
+                      <div className="flex gap-1">
+                        {getGuestIcon(roomType.maxGuests)}
+                      </div>
+                      <span className="text-sm text-gray-600 font-medium">
+                        Max {roomType.maxGuests} {roomType.maxGuests === 1 ? 'guest' : 'guests'}
+                      </span>
+                    </div>
+
+                    {/* Price Section */}
+                    <div className="space-y-2">
+                      <div className="text-xs text-gray-500 font-semibold uppercase">Price for {nights} {nights === 1 ? "night" : "nights"}</div>
+                      {pkg.originalPrice && (
+                        <div className="text-sm text-gray-500 line-through font-semibold">
+                          {formatCurrency(pkg.originalPrice, currency, locale)}
+                        </div>
+                      )}
+                      <div className="flex items-baseline gap-2">
+                        <div className="text-2xl font-bold text-gray-900">
+                          {formatCurrency(pkg.finalPrice, currency, locale)}
+                        </div>
+                        {pkg.discountPercent && (
+                          <span className="inline-block px-2 py-1 bg-green-700 text-white text-xs font-bold rounded">
+                            {pkg.discountPercent}% off
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-gray-600">
+                        +{formatCurrency(pkg.finalPrice * 0.05, currency, locale)} taxes and charges
+                      </div>
+                      {pkg.isLimitedTime && pkg.dealLabel && (
+                        <div className="inline-block px-2.5 py-1 bg-red-600 text-white text-xs font-bold rounded">
+                          ⚡ {pkg.dealLabel}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Benefits Section */}
+                    <div className="space-y-2 pb-3 border-b border-gray-200">
+                      <div className="text-xs text-gray-500 font-semibold uppercase mb-2">Included</div>
+                      {pkg.benefits.map((benefit, idx) => (
+                        <div key={idx} className="flex items-start gap-2">
+                          <svg className="w-4 h-4 text-green-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-sm text-green-700 font-semibold">{benefit}</span>
+                        </div>
+                      ))}
+                      {pkg.freeCancellation && (
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 text-green-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                          <span className="text-sm text-green-700">
+                            <strong className="font-bold">Free cancellation</strong>{" "}
+                            {pkg.cancellationDeadlineText && (
+                              <span className="font-normal">{pkg.cancellationDeadlineText}</span>
+                            )}
+                          </span>
+                        </div>
+                      )}
+                      {pkg.prepaymentRequired && (
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 text-gray-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                          <span className="text-sm text-gray-600">Pay the property before arrival</span>
+                        </div>
+                      )}
+                      {pkg.noCreditCard && (
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 text-green-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                          </svg>
+                          <span className="text-sm text-green-700 font-medium">No credit card needed</span>
+                        </div>
+                      )}
+                      {!pkg.isRefundable && (
+                        <div className="flex items-start gap-2">
+                          <svg className="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-sm text-red-700 font-medium">Non-refundable</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Selection Section */}
+                    <div className="space-y-3">
+                      <label className="text-xs text-gray-500 font-semibold uppercase block">Select rooms</label>
+                      <select
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:border-transparent text-base"
+                        style={{ '--tw-ring-color': 'var(--red)' } as React.CSSProperties}
+                        value={
+                          selectedRooms[roomType.id]?.packageId === pkg.id
+                            ? selectedRooms[roomType.id].quantity
+                            : 0
+                        }
+                        onChange={(e) =>
+                          handleRoomSelection(
+                            roomType.id,
+                            pkg.id,
+                            parseInt(e.target.value)
+                          )
+                        }
+                      >
+                        <option value="0">0 rooms</option>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                          <option key={num} value={num}>
+                            {num} {num === 1 ? 'room' : 'rooms'}
+                          </option>
+                        ))}
+                      </select>
+
+                      {selectedRooms[roomType.id]?.packageId === pkg.id &&
+                        selectedRooms[roomType.id].quantity > 0 && (
+                          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                            <div className="text-sm font-semibold text-gray-900 mb-2">
+                              {selectedRooms[roomType.id].quantity}{" "}
+                              {selectedRooms[roomType.id].quantity === 1 ? "room" : "rooms"} selected
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-sm text-gray-600">Subtotal:</span>
+                              <span className="text-xl font-bold text-gray-900">
+                                {formatCurrency(
+                                  pkg.finalPrice * selectedRooms[roomType.id].quantity,
+                                  currency,
+                                  locale
+                                )}
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              +{formatCurrency(
+                                pkg.finalPrice * selectedRooms[roomType.id].quantity * 0.05,
+                                currency,
+                                locale
+                              )}{" "}
+                              taxes and charges
+                            </div>
+                          </div>
+                        )}
+                    </div>
                   </div>
                 </div>
               ))}
@@ -408,18 +564,64 @@ export default function RoomSelection({
       {/* Booking Summary (Sticky) */}
       {hasSelectedRooms && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-gray-200 shadow-lg z-50">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div>
-              <div className="text-sm text-gray-600 font-semibold">Total price for {nights} {nights === 1 ? 'night' : 'nights'}</div>
-              <div className="text-3xl font-bold text-gray-900">
-                {formatCurrency(calculateTotal(), currency, locale)}
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4">
+            {/* Desktop Layout */}
+            <div className="hidden sm:flex items-center justify-between">
+              <div>
+                <div className="text-sm text-gray-600 font-semibold">Total price for {nights} {nights === 1 ? 'night' : 'nights'}</div>
+                <div className="text-3xl font-bold text-gray-900">
+                  {formatCurrency(calculateTotal(), currency, locale)}
+                </div>
+                <div className="text-xs text-gray-600 font-medium">
+                  +{formatCurrency(calculateTotal() * 0.05, currency, locale)} taxes and charges
+                </div>
               </div>
-              <div className="text-xs text-gray-600 font-medium">
-                +{formatCurrency(calculateTotal() * 0.05, currency, locale)} taxes and
-                charges
-              </div>
+              <button
+                onClick={() => {
+                  let totalRooms = 0;
+                  Object.entries(selectedRooms).forEach(
+                    ([roomTypeId, selection]) => {
+                      if (selection.quantity > 0) {
+                        totalRooms += selection.quantity;
+                      }
+                    }
+                  );
+
+                  const params = new URLSearchParams();
+                  params.set("checkIn", checkIn);
+                  params.set("checkOut", checkOut);
+                  params.set("adults", Math.max(1, adults).toString());
+                  params.set("children", Math.max(0, children).toString());
+                  params.set("rooms", Math.max(1, totalRooms).toString());
+                  Object.entries(selectedRooms).forEach(
+                    ([roomTypeId, selection]) => {
+                      if (selection.quantity > 0) {
+                        params.append("roomTypeId", roomTypeId);
+                        params.append("packageId", selection.packageId);
+                        params.append("quantity", selection.quantity.toString());
+                      }
+                    }
+                  );
+                  window.location.href = `/${locale}/properties/${propertyId}/book?${params.toString()}`;
+                }}
+                className="btn-primary text-lg px-8 py-4"
+              >
+                I&apos;ll reserve
+              </button>
             </div>
-            <button
+
+            {/* Mobile Layout */}
+            <div className="sm:hidden space-y-2">
+              <div className="flex items-baseline justify-between">
+                <div className="text-xs text-gray-600 font-semibold">Total for {nights} {nights === 1 ? 'night' : 'nights'}</div>
+                <div className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(calculateTotal(), currency, locale)}
+                </div>
+              </div>
+              <div className="text-xs text-gray-600 text-right">
+                +{formatCurrency(calculateTotal() * 0.05, currency, locale)} taxes
+              </div>
+              <button
               onClick={() => {
                 let totalRooms = 0;
                 Object.entries(selectedRooms).forEach(
@@ -446,12 +648,13 @@ export default function RoomSelection({
                     }
                   }
                 );
-                window.location.href = `/${locale}/properties/${propertyId}/book?${params.toString()}`;
-              }}
-              className="btn-primary text-lg px-8 py-4"
-            >
-              I&apos;ll reserve
-            </button>
+                  window.location.href = `/${locale}/properties/${propertyId}/book?${params.toString()}`;
+                }}
+                className="w-full btn-primary text-base px-6 py-3 mt-2"
+              >
+                Reserve now
+              </button>
+            </div>
           </div>
         </div>
       )}
