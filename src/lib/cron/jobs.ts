@@ -38,14 +38,16 @@ export async function expireSubscriptionsJob() {
 
     Logger.info("CRON", `Expired ${expiredSubs.count} subscriptions`);
 
-    // Deactivate properties for hosts with no active subscription
+    // Deactivate properties for hosts with NO active subscription
+    // Uses NOT IN to avoid false-positives where a host has both expired
+    // and current active subscriptions — only deactivate truly unsubscribed hosts.
     const deactivatedProps = await db.$executeRaw`
       UPDATE "Property"
       SET status = 'INACTIVE'
-      WHERE "hostId" IN (
-        SELECT DISTINCT "hostId" 
+      WHERE "hostId" NOT IN (
+        SELECT DISTINCT "hostId"
         FROM "Subscription"
-        WHERE status != 'ACTIVE'
+        WHERE status = 'ACTIVE' AND "endsAt" > NOW()
       )
       AND status = 'ACTIVE'
     `;

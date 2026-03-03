@@ -7,6 +7,7 @@ import { ReactNode } from "react";
 import PropertyMap from "@/components/PropertyMap";
 import RoomSelection from "@/components/RoomSelection";
 import WishlistButton from "@/components/WishlistButton";
+import AvailabilityCalendar from "@/components/AvailabilityCalendar";
 import { cookies } from "next/headers";
 import { verifyAccessToken } from "@/lib/auth/jwt";
 
@@ -497,6 +498,11 @@ export default async function PropertyDetailsPage({
                 </div>
               </div>
             )}
+
+            {/* Availability Calendar */}
+            <div className="border-b border-gray-200 pb-6">
+              <AvailabilityCalendar propertyId={property.id} />
+            </div>
 
             {/* Location on Map Section */}
             {property.latitude && property.longitude && (

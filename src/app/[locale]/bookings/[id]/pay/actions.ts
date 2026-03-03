@@ -2,7 +2,11 @@
 
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
-import { stripe } from "@/lib/payments/stripe";
+import {
+  stripe,
+  createConnectedPaymentIntent,
+  calculateApplicationFee,
+} from "@/lib/payments/stripe";
 import { withRateLimit, RateLimits } from "@/lib/security/action-rate-limit";
 
 export async function createPaymentIntent(bookingId: string) {
@@ -17,6 +21,7 @@ export async function createPaymentIntent(bookingId: string) {
         property: {
           select: {
             title: true,
+            hostId: true,
           },
         },
       },
@@ -39,24 +44,64 @@ export async function createPaymentIntent(bookingId: string) {
     const threeDecimalCurrencies = ["KWD", "BHD", "OMR", "JOD", "TND"];
     const isThreeDecimal = threeDecimalCurrencies.includes(booking.currency.toUpperCase());
     const multiplier = isThreeDecimal ? 1000 : 100;
+    const amountSmallestUnit = Math.round(Number(booking.totalAmount) * multiplier);
 
     console.log(`Stripe attempt: Amount: ${Number(booking.totalAmount)}, Multiplier: ${multiplier}, Currency: ${booking.currency.toLowerCase()}`);
 
-    // Create payment intent
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(Number(booking.totalAmount) * multiplier),
-      currency: booking.currency.toLowerCase(),
-      metadata: {
-        bookingId: booking.id,
-        userId: user.sub,
-        propertyTitle: booking.property.title,
-      },
-      automatic_payment_methods: {
-        enabled: true,
+    // Look up the host's Stripe Connect account for this property
+    const hostPayout = await prisma.hostPayout.findUnique({
+      where: { hostId: booking.property.hostId },
+      select: {
+        stripeConnectId: true,
+        chargesEnabled: true,
+        platformFeePercent: true,
       },
     });
 
-    console.log("Stripe Payment Intent created successfully:", paymentIntent.id);
+    const useConnect =
+      hostPayout?.stripeConnectId &&
+      hostPayout.chargesEnabled;
+
+    let paymentIntent;
+
+    if (useConnect) {
+      // Route payment through host's connected account
+      // Platform takes an application fee (default 10% if not overridden)
+      const feePercent = Number(hostPayout!.platformFeePercent ?? 10);
+      const applicationFeeAmount = calculateApplicationFee(amountSmallestUnit, feePercent);
+
+      paymentIntent = await createConnectedPaymentIntent({
+        amount: amountSmallestUnit,
+        currency: booking.currency.toLowerCase(),
+        connectedAccountId: hostPayout!.stripeConnectId!,
+        applicationFeeAmount,
+        metadata: {
+          bookingId: booking.id,
+          userId: user.sub,
+          propertyTitle: booking.property.title,
+          hostAccountId: hostPayout!.stripeConnectId!,
+        },
+      });
+
+      console.log(
+        `Stripe Connect PaymentIntent created: ${paymentIntent.id}`,
+        `(fee: ${feePercent}% = ${applicationFeeAmount} ${booking.currency})`
+      );
+    } else {
+      // Fallback: platform-level charge (host hasn't completed Connect onboarding)
+      paymentIntent = await stripe.paymentIntents.create({
+        amount: amountSmallestUnit,
+        currency: booking.currency.toLowerCase(),
+        metadata: {
+          bookingId: booking.id,
+          userId: user.sub,
+          propertyTitle: booking.property.title,
+        },
+        automatic_payment_methods: { enabled: true },
+      });
+
+      console.log("Stripe PaymentIntent created (platform):", paymentIntent.id);
+    }
 
     return {
       success: true,

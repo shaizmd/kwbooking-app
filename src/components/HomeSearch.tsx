@@ -122,7 +122,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
   return (
     <div className="w-full relative">
       {/* Pill-shaped Search Container */}
-      <div className="bg-white rounded-2xl md:rounded-full shadow-2xl p-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] transition-all duration-300 border border-gray-100">
+      <div className="bg-white rounded-2xl md:rounded-full shadow-2xl p-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] transition-all duration-300 border border-gray-100 overflow-hidden">
         <div className="flex flex-col md:grid md:grid-cols-[1fr_1fr_1fr_auto] gap-0 items-stretch">{/* Check-in */}
           <button
             onClick={() => {
@@ -175,17 +175,19 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
           </button>
 
           {/* Search Button - Responsive */}
-          <button
-            onClick={handleSearch}
-            disabled={!range?.from || !range?.to}
-            type="button"
-            className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-b-2xl md:rounded-b-none md:rounded-r-full px-6 md:px-8 py-5 md:py-4 flex items-center justify-center gap-2.5 font-bold text-lg md:text-base transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 shadow-lg disabled:shadow-none cursor-pointer active:scale-[0.98] mt-2 md:mt-0 md:min-w-35"
-          >
-            <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <span>Search</span>
-          </button>
+          <div className="mt-0 md:mt-0 md:-mr-2 md:-my-2 md:flex">
+            <button
+              onClick={handleSearch}
+              disabled={!range?.from || !range?.to}
+              type="button"
+              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-b-2xl md:rounded-none px-6 md:px-10 py-4 flex items-center justify-center gap-2.5 font-bold text-lg md:text-base transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:shadow-none cursor-pointer active:scale-[0.98]"
+            >
+              <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span>Search</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -318,9 +320,10 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                   </button>
                   <span className="text-base font-semibold text-gray-900 min-w-6 text-center">{adults}</span>
                   <button
-                    onClick={() => setAdults((a) => a + 1)}
+                    onClick={() => setAdults((a) => Math.min(30, a + 1))}
+                    disabled={adults >= 30}
                     type="button"
-                    className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-colors"
+                    className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -348,9 +351,10 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
                   </button>
                   <span className="text-base font-semibold text-gray-900 min-w-6 text-center">{children}</span>
                   <button
-                    onClick={() => setChildren((c) => c + 1)}
+                    onClick={() => setChildren((c) => Math.min(30, c + 1))}
+                    disabled={children >= 30}
                     type="button"
-                    className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-colors"
+                    className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

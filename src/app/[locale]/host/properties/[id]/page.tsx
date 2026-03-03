@@ -10,9 +10,9 @@ import {
 export default async function EditPropertyPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
   const user = await requireRole("HOST");
 
   const property = await prisma.property.findUnique({
@@ -190,8 +190,14 @@ export default async function EditPropertyPage({
             <h3 className="font-semibold text-gray-900 mb-4">Quick Actions</h3>
             <div className="space-y-2">
               <Link
-                href={`/host/properties/${id}/images`}
+                href={`/${locale}/host/properties/${id}/rooms`}
                 className="block w-full text-center btn-primary"
+              >
+                Manage Room Types
+              </Link>
+              <Link
+                href={`/${locale}/host/properties/${id}/images`}
+                className="block w-full text-center bg-white hover-bg-white-light text-gray-700 border border-gray-300 px-4 py-2 rounded-lg font-medium transition"
               >
                 Manage Images
               </Link>

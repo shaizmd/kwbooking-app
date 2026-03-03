@@ -45,10 +45,12 @@ export async function publishProperty(propertyId: string) {
     throw new Error("At least one image is required to publish");
   }
 
-  // 4. Publish
+  // 4. Submit for admin approval
+  // Properties go through PENDING_APPROVAL → ACTIVE so admins can review
+  // before a listing goes live. The admin panel approves/rejects.
   return prisma.property.update({
     where: { id: propertyId },
-    data: { status: "ACTIVE" },
+    data: { status: "PENDING_APPROVAL" },
   });
 }
 

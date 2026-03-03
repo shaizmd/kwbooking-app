@@ -29,6 +29,11 @@ export default async function HostAccountPage({
     },
   });
 
+  const hostPayout = await prisma.hostPayout.findUnique({
+    where: { hostId: userPayload.sub },
+    select: { onboardingStatus: true, chargesEnabled: true },
+  });
+
   if (!user) {
     return null;
   }
@@ -89,6 +94,40 @@ export default async function HostAccountPage({
               View bookings
             </Link>
           </div>
+        </div>
+
+        {/* Payouts Banner */}
+        <div className={`rounded-lg border p-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+          hostPayout?.onboardingStatus === "COMPLETE"
+            ? "bg-green-50 border-green-200"
+            : "bg-amber-50 border-amber-200"
+        }`}>
+          <div>
+            <h3 className={`font-semibold text-sm mb-1 ${
+              hostPayout?.onboardingStatus === "COMPLETE" ? "text-green-900" : "text-amber-900"
+            }`}>
+              {hostPayout?.onboardingStatus === "COMPLETE"
+                ? "✓ Stripe payouts active"
+                : "⚠ Stripe payouts not set up"}
+            </h3>
+            <p className={`text-sm ${
+              hostPayout?.onboardingStatus === "COMPLETE" ? "text-green-700" : "text-amber-700"
+            }`}>
+              {hostPayout?.onboardingStatus === "COMPLETE"
+                ? "Payment settlements are going directly to your bank account."
+                : "Set up Stripe Connect to receive payments directly in your bank account."}
+            </p>
+          </div>
+          <Link
+            href={`/${locale}/host/account/payout`}
+            className={`shrink-0 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              hostPayout?.onboardingStatus === "COMPLETE"
+                ? "bg-green-700 hover:bg-green-800 text-white"
+                : "bg-amber-600 hover:bg-amber-700 text-white"
+            }`}
+          >
+            {hostPayout?.onboardingStatus === "COMPLETE" ? "Manage payouts" : "Set up payouts →"}
+          </Link>
         </div>
 
         {/* Personal Information (editable, like customer profile) */}

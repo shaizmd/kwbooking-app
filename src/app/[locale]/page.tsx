@@ -27,7 +27,7 @@ export default async function HomePage({
             priority
           />
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-black/30"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-black/60 via-black/40 to-black/30"></div>
         </div>
         
         {/* Glassmorphic Content Container */}

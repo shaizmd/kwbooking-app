@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 
 export default function NewPropertyPage() {
   const router = useRouter();
+  const params = useParams();
+  const locale = params?.locale || "en";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
@@ -93,7 +96,8 @@ export default function NewPropertyPage() {
         throw new Error(data?.error || "Failed to create property");
       }
 
-      router.push(`/host/properties/${data.id}`);
+      // Redirect to room types management for the newly created property
+      router.push(`/${locale}/host/properties/${data.id}/rooms`);
     } catch (err: unknown) {
       const error = err as Error;
       setError(error.message);

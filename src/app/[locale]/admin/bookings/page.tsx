@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
+import { AdminRefundButton } from "./AdminRefundButton";
 
 export default async function AdminBookingsPage() {
   await requireRole("ADMIN");
@@ -23,6 +24,11 @@ export default async function AdminBookingsPage() {
         select: {
           status: true,
           provider: true,
+          platformFee: true,
+          hostAmount: true,
+          stripeConnectId: true,
+          refundId: true,
+          refundedAt: true,
         },
       },
     },
@@ -88,11 +94,16 @@ export default async function AdminBookingsPage() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
-                        {booking.customer.fullName || "Not provided"}
+                        {booking.guestFullName}
                       </div>
                       <div className="text-xs text-gray-500">
                         {booking.customer.email}
                       </div>
+                      {booking.customer.fullName && booking.customer.fullName !== booking.guestFullName && (
+                        <div className="text-xs text-gray-400">
+                          Account: {booking.customer.fullName}
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-900">
@@ -127,37 +138,63 @@ export default async function AdminBookingsPage() {
                             : booking.status === "CANCELLED"
                             ? "bg-red-100 text-red-800"
                             : booking.status === "COMPLETED"
-                            ? "bg-green-100 text-green-800"
+                            ? "bg-blue-100 text-blue-800"
+                            : booking.status === "REFUNDED"
+                            ? "bg-gray-100 text-gray-700"
                             : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {booking.status}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4">
                       {booking.payment ? (
-                        <div>
+                        <div className="space-y-0.5">
                           <span
                             className={`px-2 py-1 text-xs font-medium rounded-full ${
                               booking.payment.status === "SUCCESS"
                                 ? "bg-green-100 text-green-800"
                                 : booking.payment.status === "PENDING"
                                 ? "bg-yellow-100 text-yellow-800"
+                                : booking.payment.status === "REFUNDED"
+                                ? "bg-gray-100 text-gray-700"
                                 : "bg-red-100 text-red-800"
                             }`}
                           >
                             {booking.payment.status}
                           </span>
-                          <div className="text-xs text-gray-500 mt-1">
-                            {booking.payment.provider}
-                          </div>
+                          <div className="text-xs text-gray-500">{booking.payment.provider}</div>
+                          {booking.payment.hostAmount && (
+                            <div className="text-xs text-gray-500">
+                              Host: {Number(booking.payment.hostAmount).toFixed(3)}
+                              {booking.payment.platformFee && (
+                                <> &middot; Fee: {Number(booking.payment.platformFee).toFixed(3)}</>
+                              )}
+                            </div>
+                          )}
+                          {booking.payment.refundId && (
+                            <div className="text-xs text-gray-400 font-mono">Refund: {booking.payment.refundId.slice(0, 16)}…</div>
+                          )}
+                          {booking.payment.stripeConnectId && (
+                            <div className="text-xs text-gray-400">via Connect</div>
+                          )}
                         </div>
                       ) : (
                         <span className="text-xs text-gray-400">No payment</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {booking.createdAt.toLocaleDateString()}
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-500">{booking.createdAt.toLocaleDateString()}</div>
+                      {booking.status === "CONFIRMED" && (
+                        <div className="mt-1">
+                          <AdminRefundButton
+                            bookingId={booking.id}
+                            guestName={booking.guestFullName}
+                            amount={Number(booking.totalAmount).toFixed(3)}
+                            currency={booking.currency}
+                          />
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -193,7 +230,9 @@ export default async function AdminBookingsPage() {
                       : booking.status === "CANCELLED"
                       ? "bg-red-100 text-red-800"
                       : booking.status === "COMPLETED"
-                      ? "bg-green-100 text-green-800"
+                      ? "bg-blue-100 text-blue-800"
+                      : booking.status === "REFUNDED"
+                      ? "bg-gray-100 text-gray-700"
                       : "bg-gray-100 text-gray-800"
                   }`}
                 >
@@ -236,20 +275,42 @@ export default async function AdminBookingsPage() {
                 </div>
 
                 {booking.payment && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500">Payment:</span>
-                    <span
-                      className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        booking.payment.status === "SUCCESS"
-                          ? "bg-green-100 text-green-800"
-                          : booking.payment.status === "PENDING"
-                          ? "bg-yellow-100 text-yellow-800"
-                          : "bg-red-100 text-red-800"
-                      }`}
-                    >
-                      {booking.payment.status}
-                    </span>
-                    <span className="text-xs text-gray-500">({booking.payment.provider})</span>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">Payment:</span>
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${
+                          booking.payment.status === "SUCCESS"
+                            ? "bg-green-100 text-green-800"
+                            : booking.payment.status === "PENDING"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : booking.payment.status === "REFUNDED"
+                            ? "bg-gray-100 text-gray-700"
+                            : "bg-red-100 text-red-800"
+                        }`}
+                      >
+                        {booking.payment.status}
+                      </span>
+                      <span className="text-xs text-gray-500">({booking.payment.provider})</span>
+                    </div>
+                    {booking.payment.hostAmount && (
+                      <div className="text-xs text-gray-500">
+                        Host: {Number(booking.payment.hostAmount).toFixed(3)}
+                        {booking.payment.platformFee && <> &middot; Fee: {Number(booking.payment.platformFee).toFixed(3)}</>}
+                        {booking.payment.stripeConnectId && <> &middot; via Connect</>}
+                      </div>
+                    )}
+                    {booking.payment.refundId && (
+                      <div className="text-xs text-gray-400 font-mono">Refund ID: {booking.payment.refundId.slice(0, 16)}…</div>
+                    )}
+                    {booking.status === "CONFIRMED" && (
+                      <AdminRefundButton
+                        bookingId={booking.id}
+                        guestName={booking.guestFullName}
+                        amount={Number(booking.totalAmount).toFixed(3)}
+                        currency={booking.currency}
+                      />
+                    )}
                   </div>
                 )}
 

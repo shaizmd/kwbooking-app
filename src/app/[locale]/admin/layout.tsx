@@ -73,6 +73,12 @@ export default async function AdminLayout({
               Invoices
             </Link>
             <Link
+              href={`/${locale}/admin/payouts`}
+              className="py-4 px-1 border-b-2 border-transparent hover:border-[#d32f2f] text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
+            >
+              Payouts
+            </Link>
+            <Link
               href={`/${locale}/admin/settings`}
               className="py-4 px-1 border-b-2 border-transparent hover:border-[#d32f2f] text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors whitespace-nowrap"
             >

@@ -47,8 +47,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Redirect back to settings page
-    return NextResponse.redirect(new URL("/admin/settings", request.url));
+    // Redirect back to settings page — use Referer to preserve locale,
+    // fall back to the default locale path.
+    const referer = request.headers.get("referer");
+    const redirectUrl = referer
+      ? new URL(referer)
+      : new URL("/en/admin/settings", request.url);
+    return NextResponse.redirect(redirectUrl);
   } catch (error) {
     console.error("[API] Settings update failed:", error);
     

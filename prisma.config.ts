@@ -1,4 +1,9 @@
 import { defineConfig } from "prisma/config";
+import * as dotenv from "dotenv";
+
+// Prisma config runs outside Next.js, so we load .env manually
+dotenv.config({ path: ".env" });
+dotenv.config({ path: ".env.local", override: false });
 
 export default defineConfig({
   schema: "src/prisma/schema.prisma",
@@ -7,6 +12,6 @@ export default defineConfig({
     seed: "bun ./src/prisma/seed.ts",
   },
   datasource: {
-    url: "postgresql://neondb_owner:npg_7vdaE0nwoSjP@ep-billowing-credit-aba8bkbt-pooler.eu-west-2.aws.neon.tech/neondb?sslmode=require",
+    url: process.env.DATABASE_URL!,
   },
 });
