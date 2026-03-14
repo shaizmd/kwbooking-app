@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 
 const propertySchema = z.object({
   title: z.string().min(5),
@@ -81,4 +82,43 @@ export async function updateProperty(
     where: { id: propertyId },
     data: parsed.data,
   });
+}
+
+export async function deleteProperty(propertyId: string, locale: string) {
+  const user = await requireRole("HOST");
+
+  const property = await prisma.property.findUnique({
+    where: { id: propertyId },
+    select: { id: true, hostId: true },
+  });
+
+  if (!property || property.hostId !== user.sub) {
+    throw new Error("Unauthorized");
+  }
+
+  const bookingCount = await prisma.booking.count({
+    where: { propertyId },
+  });
+
+  if (bookingCount > 0) {
+    throw new Error("Cannot delete property with existing bookings");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.wishlist.deleteMany({ where: { propertyId } });
+    await tx.blockedDate.deleteMany({ where: { propertyId } });
+    await tx.propertyAmenity.deleteMany({ where: { propertyId } });
+    await tx.propertyImage.deleteMany({ where: { propertyId } });
+    await tx.roomPackage.deleteMany({
+      where: {
+        roomType: {
+          propertyId,
+        },
+      },
+    });
+    await tx.roomType.deleteMany({ where: { propertyId } });
+    await tx.property.delete({ where: { id: propertyId } });
+  });
+
+  revalidatePath(`/${locale}/host/properties`);
 }

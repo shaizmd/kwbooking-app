@@ -30,7 +30,13 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const body = await request.json();
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
   const parsed = refundSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid request", details: parsed.error.issues }, { status: 400 });
@@ -71,6 +77,13 @@ export async function POST(
 
   if (booking.payment.status === "REFUNDED") {
     return NextResponse.json({ error: "Already refunded." }, { status: 400 });
+  }
+
+  if (booking.payment.status !== "SUCCESS") {
+    return NextResponse.json(
+      { error: "Only successful payments can be refunded." },
+      { status: 400 }
+    );
   }
 
   try {

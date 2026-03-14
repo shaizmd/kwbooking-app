@@ -7,9 +7,9 @@ import { ImageUploadForm } from "./ImageUploadForm";
 export default async function PropertyImagesPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { id } = await params;
+  const { locale, id } = await params;
   const user = await requireRole("HOST");
 
   const property = await prisma.property.findUnique({
@@ -33,7 +33,7 @@ export default async function PropertyImagesPage({
       {/* Header */}
       <div className="mb-8">
         <Link
-          href={`/host/properties/${id}`}
+          href={`/${locale}/host/properties/${id}`}
           className="inline-flex items-center text-gray-700 hover-red font-medium mb-4 transition-colors"
         >
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

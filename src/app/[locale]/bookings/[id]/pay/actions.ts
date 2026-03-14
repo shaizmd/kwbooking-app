@@ -46,6 +46,10 @@ export async function createPaymentIntent(bookingId: string) {
     const multiplier = isThreeDecimal ? 1000 : 100;
     const amountSmallestUnit = Math.round(Number(booking.totalAmount) * multiplier);
 
+    if (!Number.isFinite(amountSmallestUnit) || amountSmallestUnit <= 0) {
+      return { success: false, error: "Invalid payment amount" };
+    }
+
     console.log(`Stripe attempt: Amount: ${Number(booking.totalAmount)}, Multiplier: ${multiplier}, Currency: ${booking.currency.toLowerCase()}`);
 
     // Look up the host's Stripe Connect account for this property
@@ -54,13 +58,15 @@ export async function createPaymentIntent(bookingId: string) {
       select: {
         stripeConnectId: true,
         chargesEnabled: true,
+        payoutsEnabled: true,
         platformFeePercent: true,
       },
     });
 
     const useConnect =
       hostPayout?.stripeConnectId &&
-      hostPayout.chargesEnabled;
+      hostPayout.chargesEnabled &&
+      hostPayout.payoutsEnabled;
 
     let paymentIntent;
 
@@ -107,7 +113,7 @@ export async function createPaymentIntent(bookingId: string) {
       success: true,
       clientSecret: paymentIntent.client_secret,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Payment intent creation error:", error);
     return { 
       success: false, 

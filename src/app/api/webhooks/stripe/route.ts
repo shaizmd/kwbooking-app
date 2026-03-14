@@ -101,6 +101,10 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   const intent = event.data.object as Stripe.PaymentIntent;
   const bookingId = intent.metadata?.bookingId;
 
+  const threeDecimalCurrencies = ["KWD", "BHD", "OMR", "JOD", "TND"];
+  const isThreeDecimal = threeDecimalCurrencies.includes(intent.currency.toUpperCase());
+  const divisor = isThreeDecimal ? 1000 : 100;
+
   console.log("=== WEBHOOK: payment_intent.succeeded ===");
   console.log("Payment Intent ID:", intent.id);
   console.log("Booking ID from metadata:", bookingId);
@@ -154,12 +158,20 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
         },
       });
 
-      await tx.payment.create({
-        data: {
+      await tx.payment.upsert({
+        where: { bookingId },
+        create: {
           bookingId,
           provider: "stripe",
           providerRef: intent.id,
-          amount: intent.amount / 1000, // KWD uses 3 decimals
+          amount: intent.amount / divisor,
+          currency: intent.currency.toUpperCase(),
+          status: "REFUNDED",
+          stripeConnectId: connectedAccountId,
+        },
+        update: {
+          providerRef: intent.id,
+          amount: intent.amount / divisor,
           currency: intent.currency.toUpperCase(),
           status: "REFUNDED",
           stripeConnectId: connectedAccountId,
@@ -173,10 +185,6 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
 
     // Calculate platform fee from the intent (set as application_fee_amount)
     const applicationFee = intent.application_fee_amount ?? 0;
-    const threeDecimalCurrencies = ["KWD", "BHD", "OMR", "JOD", "TND"];
-    const isThreeDecimal = threeDecimalCurrencies.includes(intent.currency.toUpperCase());
-    const divisor = isThreeDecimal ? 1000 : 100;
-
     const totalAmount = intent.amount / divisor;
     const platformFee  = applicationFee / divisor;
     const hostAmount  = totalAmount - platformFee;
@@ -188,10 +196,20 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     });
 
     // 2. Store payment with split details
-    await tx.payment.create({
-      data: {
+    await tx.payment.upsert({
+      where: { bookingId },
+      create: {
         bookingId,
         provider: "stripe",
+        providerRef: intent.id,
+        amount: totalAmount,
+        currency: intent.currency.toUpperCase(),
+        status: "SUCCESS",
+        stripeConnectId: connectedAccountId,
+        platformFee: platformFee,
+        hostAmount: hostAmount,
+      },
+      update: {
         providerRef: intent.id,
         amount: totalAmount,
         currency: intent.currency.toUpperCase(),
@@ -237,10 +255,18 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
     }
 
     if (pdfUrl) {
-      await tx.invoice.create({
-        data: {
+      await tx.invoice.upsert({
+        where: { bookingId: booking.id },
+        create: {
           bookingId: booking.id,
           invoiceNumber,
+          subtotal: booking.subtotal,
+          taxAmount: 0,
+          totalAmount: booking.totalAmount,
+          currency: booking.currency,
+          pdfUrl,
+        },
+        update: {
           subtotal: booking.subtotal,
           taxAmount: 0,
           totalAmount: booking.totalAmount,

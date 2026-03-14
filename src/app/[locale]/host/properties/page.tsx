@@ -2,7 +2,12 @@ import { requireRole } from "@/lib/auth/require-role";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 
-export default async function HostPropertiesPage() {
+export default async function HostPropertiesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const user = await requireRole("HOST");
 
   const properties = await prisma.property.findMany({
@@ -26,7 +31,7 @@ export default async function HostPropertiesPage() {
           </p>
         </div>
         <Link
-          href="/host/properties/new"
+          href={`/${locale}/host/properties/new`}
           className="btn-primary mt-4 sm:mt-0 inline-flex items-center justify-center space-x-2"
           style={{ height: '48px', paddingLeft: '24px', paddingRight: '24px' }}
         >
@@ -50,7 +55,7 @@ export default async function HostPropertiesPage() {
             Start earning by listing your first property. It only takes a few minutes!
           </p>
           <Link
-            href="/host/properties/new"
+            href={`/${locale}/host/properties/new`}
             className="btn-primary inline-flex items-center space-x-2"
             style={{ height: '48px', paddingLeft: '24px', paddingRight: '24px' }}
           >
@@ -63,7 +68,7 @@ export default async function HostPropertiesPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {properties.map((property) => (
-            <PropertyCard key={property.id} property={property} />
+            <PropertyCard key={property.id} property={property} locale={locale} />
           ))}
         </div>
       )}
@@ -73,6 +78,7 @@ export default async function HostPropertiesPage() {
 
 function PropertyCard({
   property,
+  locale,
 }: {
   property: {
     id: string;
@@ -87,10 +93,11 @@ function PropertyCard({
       reviews: number;
     };
   };
+  locale: string;
 }) {
   return (
     <Link
-      href={`/host/properties/${property.id}`}
+      href={`/${locale}/host/properties/${property.id}`}
       className="card overflow-hidden transition hover:-translate-y-0.5"
       style={{ padding: 0, marginBottom: 0 }}
     >

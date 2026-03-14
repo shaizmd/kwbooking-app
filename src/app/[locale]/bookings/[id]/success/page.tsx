@@ -40,9 +40,67 @@ export default async function PaymentSuccessPage({
     redirect(`/${locale}/bookings/${id}/pay`);
   }
 
+  const bookingForVerification = await prisma.booking.findUnique({
+    where: { id },
+    select: {
+      customerId: true,
+      totalAmount: true,
+      currency: true,
+      property: {
+        select: {
+          hostId: true,
+        },
+      },
+    },
+  });
+
+  if (!bookingForVerification || bookingForVerification.customerId !== user.sub) {
+    notFound();
+  }
+
+  const hostPayout = await prisma.hostPayout.findUnique({
+    where: { hostId: bookingForVerification.property.hostId },
+    select: { stripeConnectId: true },
+  });
+
   let paymentStatus: string;
   try {
-    const intent = await stripe.paymentIntents.retrieve(payment_intent);
+    let intent = null;
+    const retrievalAttempts: Array<{ stripeAccount?: string }> = [{ }];
+
+    if (hostPayout?.stripeConnectId) {
+      retrievalAttempts.push({ stripeAccount: hostPayout.stripeConnectId });
+    }
+
+    for (const options of retrievalAttempts) {
+      try {
+        intent = await stripe.paymentIntents.retrieve(payment_intent, options);
+        break;
+      } catch {
+        continue;
+      }
+    }
+
+    if (!intent) {
+      redirect(`/${locale}/bookings/${id}/pay?error=verification_failed`);
+    }
+
+    if (intent.metadata?.bookingId !== id) {
+      redirect(`/${locale}/bookings/${id}/pay?error=booking_mismatch`);
+    }
+
+    const threeDecimalCurrencies = ["KWD", "BHD", "OMR", "JOD", "TND"];
+    const isThreeDecimal = threeDecimalCurrencies.includes(
+      bookingForVerification.currency.toUpperCase()
+    );
+    const expectedAmount = Math.round(
+      Number(bookingForVerification.totalAmount) * (isThreeDecimal ? 1000 : 100)
+    );
+
+    if (intent.amount !== expectedAmount) {
+      redirect(`/${locale}/bookings/${id}/pay?error=amount_mismatch`);
+    }
+
     paymentStatus = intent.status;
 
     // Only allow succeeded payments

@@ -1,13 +1,17 @@
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+
+if (!stripeSecretKey) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("STRIPE_SECRET_KEY is required in production");
+  }
   console.warn("WARNING: STRIPE_SECRET_KEY is not set in environment variables!");
 }
 
 export const stripe = new Stripe(
-  process.env.STRIPE_SECRET_KEY || "sk_test_placeholder",
+  stripeSecretKey || "sk_test_placeholder",
   {
-    // @ts-expect-error - Using latest API version
     apiVersion: "2024-06-20",
   }
 );

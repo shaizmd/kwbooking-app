@@ -1,35 +1,46 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
+import { unstable_noStore as noStore } from "next/cache";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminUsersPage() {
+  noStore();
   await requireRole("ADMIN");
 
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    select: {
-      id: true,
-      email: true,
-      phone: true,
-      role: true,
-      isVerified: true,
-      fullName: true,
-      isKycApproved: true,
-      createdAt: true,
-      _count: {
-        select: {
-          properties: true,
-          bookings: true,
+  const [totalUsers, users] = await prisma.$transaction([
+    prisma.user.count(),
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      select: {
+        id: true,
+        email: true,
+        phone: true,
+        role: true,
+        isVerified: true,
+        fullName: true,
+        isKycApproved: true,
+        createdAt: true,
+        _count: {
+          select: {
+            properties: true,
+            bookings: true,
+          },
         },
       },
-    },
-  });
+    }),
+  ]);
 
   return (
     <div>
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">User Management</h2>
-        <p className="text-gray-600">Total users: {users.length}</p>
+        <p className="text-gray-600">Total users: {totalUsers}</p>
+        {totalUsers > users.length && (
+          <p className="text-xs text-gray-500 mt-1">Showing latest {users.length} users</p>
+        )}
       </div>
 
       {/* Desktop Table View */}

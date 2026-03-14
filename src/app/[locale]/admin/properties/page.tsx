@@ -1,33 +1,66 @@
 import { prisma } from "@/lib/db";
 import { requireRole } from "@/lib/auth/require-role";
+import { unstable_noStore as noStore } from "next/cache";
+import { revalidatePath } from "next/cache";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminPropertiesPage() {
+  noStore();
   await requireRole("ADMIN");
 
-  const properties = await prisma.property.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    include: {
-      host: {
-        select: {
-          email: true,
-          fullName: true,
+  const [totalProperties, properties] = await prisma.$transaction([
+    prisma.property.count(),
+    prisma.property.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 100,
+      include: {
+        host: {
+          select: {
+            email: true,
+            fullName: true,
+          },
+        },
+        _count: {
+          select: {
+            bookings: true,
+            images: true,
+          },
         },
       },
-      _count: {
-        select: {
-          bookings: true,
-          images: true,
-        },
+    }),
+  ]);
+
+  async function removePropertyFromWebsite(formData: FormData) {
+    "use server";
+    await requireRole("ADMIN");
+
+    const propertyId = String(formData.get("propertyId") || "");
+    if (!propertyId) {
+      throw new Error("Property ID is required");
+    }
+
+    await prisma.property.update({
+      where: { id: propertyId },
+      data: {
+        status: "BLOCKED",
+        adminNotes: "Removed from website by admin",
       },
-    },
-  });
+    });
+
+    revalidatePath("/en/admin/properties");
+    revalidatePath("/ar/admin/properties");
+  }
 
   return (
     <div>
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">Property Management</h2>
-        <p className="text-gray-600">Total properties: {properties.length}</p>
+        <p className="text-gray-600">Total properties: {totalProperties}</p>
+        {totalProperties > properties.length && (
+          <p className="text-xs text-gray-500 mt-1">Showing latest {properties.length} properties</p>
+        )}
       </div>
 
       {/* Desktop Table View */}
@@ -56,6 +89,9 @@ export default async function AdminPropertiesPage() {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Created
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Action
                 </th>
               </tr>
             </thead>
@@ -109,6 +145,21 @@ export default async function AdminPropertiesPage() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {property.createdAt.toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {property.status !== "BLOCKED" ? (
+                      <form action={removePropertyFromWebsite}>
+                        <input type="hidden" name="propertyId" value={property.id} />
+                        <button
+                          type="submit"
+                          className="px-3 py-1 text-xs font-medium rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+                        >
+                          Remove from Website
+                        </button>
+                      </form>
+                    ) : (
+                      <span className="text-xs text-gray-500">Removed</span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -171,6 +222,21 @@ export default async function AdminPropertiesPage() {
               <div className="pt-2 border-t border-gray-100 text-xs text-gray-500">
                 <div>{property._count.bookings} bookings • {property._count.images} images</div>
                 <div className="mt-1">Created: {property.createdAt.toLocaleDateString()}</div>
+                <div className="mt-2">
+                  {property.status !== "BLOCKED" ? (
+                    <form action={removePropertyFromWebsite}>
+                      <input type="hidden" name="propertyId" value={property.id} />
+                      <button
+                        type="submit"
+                        className="px-3 py-1 text-xs font-medium rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100"
+                      >
+                        Remove from Website
+                      </button>
+                    </form>
+                  ) : (
+                    <span className="text-xs text-gray-500">Removed</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

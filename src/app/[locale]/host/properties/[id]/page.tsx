@@ -6,6 +6,7 @@ import {
   publishProperty,
   unpublishProperty,
 } from "../publish-actions";
+import { deleteProperty } from "../actions";
 
 export default async function EditPropertyPage({
   params,
@@ -33,7 +34,7 @@ export default async function EditPropertyPage({
       {/* Header */}
       <div className="mb-8">
         <Link
-          href="/host/properties"
+          href={`/${locale}/host/properties`}
           className="inline-flex items-center text-gray-700 hover-red font-medium mb-4 transition-colors"
         >
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,11 +202,27 @@ export default async function EditPropertyPage({
               >
                 Manage Images
               </Link>
-              <button
+              <Link
+                href={`/${locale}/host/properties/${id}/edit`}
                 className="block w-full text-center bg-white hover-bg-white-light text-gray-700 border border-gray-300 px-4 py-2 rounded-lg font-medium transition"
               >
                 Edit Details
-              </button>
+              </Link>
+
+              <form
+                action={async () => {
+                  "use server";
+                  await deleteProperty(property.id, locale);
+                  redirect(`/${locale}/host/properties`);
+                }}
+              >
+                <button
+                  type="submit"
+                  className="block w-full text-center bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 px-4 py-2 rounded-lg font-medium transition"
+                >
+                  Delete Property
+                </button>
+              </form>
               
               {/* Publish/Unpublish */}
               {property.status !== "ACTIVE" ? (
@@ -213,7 +230,7 @@ export default async function EditPropertyPage({
                   action={async () => {
                     "use server";
                     await publishProperty(property.id);
-                    redirect("/host/properties");
+                    redirect(`/${locale}/host/properties`);
                   }}
                 >
                   <button
@@ -228,7 +245,7 @@ export default async function EditPropertyPage({
                   action={async () => {
                     "use server";
                     await unpublishProperty(property.id);
-                    redirect("/host/properties");
+                    redirect(`/${locale}/host/properties`);
                   }}
                 >
                   <button

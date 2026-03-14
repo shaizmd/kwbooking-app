@@ -3,7 +3,12 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { formatCurrency } from "@/lib/format";
 
-export default async function HostDashboard() {
+export default async function HostDashboard({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const user = await requireRole("HOST");
 
   const monthAgo = new Date();
@@ -181,7 +186,7 @@ export default async function HostDashboard() {
         <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-dark)' }}>Quick Actions</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <Link
-            href="/host/properties/new"
+            href={`/${locale}/host/properties/new`}
             className="btn-primary flex items-center justify-center space-x-3"
             style={{ height: '54px' }}
           >
@@ -191,7 +196,7 @@ export default async function HostDashboard() {
             <span>Add Property</span>
           </Link>
           <Link
-            href="/host/properties"
+            href={`/${locale}/host/properties`}
             className="flex items-center justify-center space-x-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg px-6 py-3 font-semibold hover:bg-gray-50 transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,7 +205,7 @@ export default async function HostDashboard() {
             <span>My Properties</span>
           </Link>
           <Link
-            href="/host/bookings"
+            href={`/${locale}/host/bookings`}
             className="flex items-center justify-center space-x-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg px-6 py-3 font-semibold hover:bg-gray-50 transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +214,7 @@ export default async function HostDashboard() {
             <span>View Bookings</span>
           </Link>
           <Link
-            href="/host/properties"
+            href={`/${locale}/host/properties`}
             className="flex items-center justify-center space-x-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg px-6 py-3 font-semibold hover:bg-gray-50 transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,7 +230,7 @@ export default async function HostDashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold" style={{ color: 'var(--text-dark)' }}>Recent Properties</h2>
-            <Link href="/host/properties" className="text-sm font-semibold hover:underline" style={{ color: 'var(--red)' }}>
+            <Link href={`/${locale}/host/properties`} className="text-sm font-semibold hover:underline" style={{ color: 'var(--red)' }}>
               View All
             </Link>
           </div>
@@ -239,7 +244,7 @@ export default async function HostDashboard() {
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No properties yet</h3>
               <p className="text-sm text-gray-600 mb-4">Start by adding your first property</p>
-              <Link href="/host/properties/new" className="inline-block btn-primary">
+              <Link href={`/${locale}/host/properties/new`} className="inline-block btn-primary">
                 Add Property
               </Link>
             </div>
@@ -248,7 +253,7 @@ export default async function HostDashboard() {
               {propertyList.map((property) => (
                 <Link
                   key={property.id}
-                  href={`/host/properties/${property.id}`}
+                  href={`/${locale}/host/properties/${property.id}`}
                   className="block p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
                 >
                   <div className="flex items-center justify-between">
@@ -285,7 +290,7 @@ export default async function HostDashboard() {
         <div className="card">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold" style={{ color: 'var(--text-dark)' }}>Recent Bookings</h2>
-            <Link href="/host/bookings" className="text-sm font-semibold hover:underline" style={{ color: 'var(--red)' }}>
+            <Link href={`/${locale}/host/bookings`} className="text-sm font-semibold hover:underline" style={{ color: 'var(--red)' }}>
               View All
             </Link>
           </div>

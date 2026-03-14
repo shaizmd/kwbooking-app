@@ -8,7 +8,7 @@ import { useParams } from "next/navigation";
 export default function NewPropertyPage() {
   const router = useRouter();
   const params = useParams();
-  const locale = params?.locale || "en";
+  const locale = typeof params?.locale === "string" ? params.locale : "en";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
@@ -110,7 +110,7 @@ export default function NewPropertyPage() {
       {/* Header */}
       <div className="mb-8">
         <Link
-          href="/host/properties"
+          href={`/${locale}/host/properties`}
           className="inline-flex items-center text-gray-700 hover-red font-medium mb-4 transition-colors"
         >
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -496,7 +496,7 @@ export default function NewPropertyPage() {
             {loading ? "Creating..." : "Create Property"}
           </button>
           <Link
-            href="/host/properties"
+            href={`/${locale}/host/properties`}
             className="flex-1 bg-white hover-bg-white-light text-gray-700 border-2 border-gray-300 px-6 py-3 rounded-lg font-semibold transition text-center"
           >
             Cancel
