@@ -11,6 +11,7 @@ interface HomeSearchProps {
 }
 
 type SavedHomeSearchState = {
+  destination?: string;
   checkIn?: string;
   checkOut?: string;
   adults?: number;
@@ -39,6 +40,7 @@ function safeParseYmd(dateStr?: string) {
 
 export default function HomeSearch({ locale }: HomeSearchProps) {
   const router = useRouter();
+  const [destination, setDestination] = useState("");
   
   const [range, setRange] = useState<DateRange | undefined>();
   const [adults, setAdults] = useState(2);
@@ -60,6 +62,8 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
         setRange({ from, to });
       }
 
+      setDestination(typeof saved.destination === "string" ? saved.destination : "");
+
       setAdults(clampInt(saved.adults, 1, 30, 2));
       setChildren(clampInt(saved.children, 0, 30, 0));
       setRooms(clampInt(saved.rooms, 1, 10, 1));
@@ -74,6 +78,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
   useEffect(() => {
     try {
       const payload: SavedHomeSearchState = {
+        destination,
         checkIn: range?.from ? format(range.from, "yyyy-MM-dd") : undefined,
         checkOut: range?.to ? format(range.to, "yyyy-MM-dd") : undefined,
         adults,
@@ -84,7 +89,7 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
     } catch {
       // ignore
     }
-  }, [range?.from, range?.to, adults, children, rooms]);
+  }, [destination, range?.from, range?.to, adults, children, rooms]);
 
   const handleDateSelect = (selectedRange: DateRange | undefined) => {
     // If we already have a complete range (both from and to), reset and start new selection
@@ -102,17 +107,25 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
   const totalGuests = useMemo(() => adults + children, [adults, children]);
 
   const handleSearch = () => {
+    const params = new URLSearchParams();
+
+    const trimmedDestination = destination.trim();
+    if (trimmedDestination) {
+      params.set("q", trimmedDestination);
+    }
+
     if (range?.from && range?.to) {
-      const params = new URLSearchParams();
       params.set("checkIn", format(range.from, "yyyy-MM-dd"));
       params.set("checkOut", format(range.to, "yyyy-MM-dd"));
-      params.set("adults", adults.toString());
-      params.set("children", children.toString());
-      params.set("rooms", rooms.toString());
-      router.push(`/${locale}/properties?${params.toString()}`);
-      setShowCalendar(false);
-      setShowGuestsPalette(false);
     }
+
+    params.set("adults", adults.toString());
+    params.set("children", children.toString());
+    params.set("rooms", rooms.toString());
+
+    router.push(`/${locale}/properties?${params.toString()}`);
+    setShowCalendar(false);
+    setShowGuestsPalette(false);
   };
 
   const handleApplyGuests = () => {
@@ -121,69 +134,85 @@ export default function HomeSearch({ locale }: HomeSearchProps) {
 
   return (
     <div className="w-full relative">
-      {/* Pill-shaped Search Container */}
-      <div className="bg-white rounded-2xl md:rounded-full shadow-2xl p-2 hover:shadow-[0_20px_60px_rgba(0,0,0,0.25)] transition-all duration-300 border border-gray-100 overflow-hidden">
-        <div className="flex flex-col md:grid md:grid-cols-[1fr_1fr_1fr_auto] gap-0 items-stretch">{/* Check-in */}
-          <button
-            onClick={() => {
-              setShowCalendar(!showCalendar);
-              setShowGuestsPalette(false);
-            }}
-            type="button"
-            className="group relative px-4 md:px-6 py-3 md:py-4 text-left rounded-t-2xl md:rounded-l-full md:rounded-tr-none hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100"
-          >
+      <div className="bg-white rounded-2xl shadow-2xl p-3 sm:p-4 border border-gray-100 overflow-hidden max-w-4xl mx-auto">
+        <div className="space-y-2.5 sm:space-y-3">
+          <div className="group relative px-4 py-3 text-left rounded-xl hover:bg-gray-50 transition-colors border border-gray-200">
             <div className="flex flex-col">
-              <span className="text-xs font-semibold text-gray-900 mb-1">Check in</span>
-              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
-                {range?.from ? format(range.from, "MMM dd, yyyy") : "Add dates"}
-              </span>
-            </div>
-          </button>
+              <span className="text-xs font-semibold text-gray-900 mb-1">Destination</span>
+              <div className="relative">
 
-          {/* Check-out */}
-          <button
-            onClick={() => {
-              setShowCalendar(!showCalendar);
-              setShowGuestsPalette(false);
-            }}
-            type="button"
-            className="group relative px-4 md:px-6 py-3 md:py-4 text-left hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 border-b md:border-b-0 md:border-r border-gray-100"
-          >
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-gray-900 mb-1">Check out</span>
-              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
-                {range?.to ? format(range.to, "MMM dd, yyyy") : "Add dates"}
-              </span>
+                <svg className="w-4 h-4 text-gray-400 absolute left-0 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                
+                <input
+                  type="text"
+                  value={destination}
+                  onChange={(e) => setDestination(e.target.value)}
+                  placeholder=" Location, place, area, property"
+                  className="w-full pl-6 pr-2 bg-transparent text-sm text-gray-700 placeholder:text-gray-400 border-0 focus:outline-none"
+                />
+              </div>
             </div>
-          </button>
+          </div>
 
-          {/* Guests - Updated */}
-          <button
-            onClick={() => {
-              setShowGuestsPalette(!showGuestsPalette);
-              setShowCalendar(false);
-            }}
-            type="button"
-            className="group relative px-4 md:px-6 py-3 md:py-4 text-left hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 md:border-r border-gray-100"
-          >
-            <div className="flex flex-col">
-              <span className="text-xs font-semibold text-gray-900 mb-1">Travelers</span>
-              <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
-                {totalGuests} {totalGuests === 1 ? 'guest' : 'guests'}, {rooms} {rooms === 1 ? 'room' : 'rooms'}
-              </span>
-            </div>
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            <button
+              onClick={() => {
+                setShowCalendar(!showCalendar);
+                setShowGuestsPalette(false);
+              }}
+              type="button"
+              className="group px-4 py-3 text-left rounded-xl hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 border border-gray-200"
+            >
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-gray-900 mb-1">Check in</span>
+                <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {range?.from ? format(range.from, "MMM dd, yyyy") : "Add dates"}
+                </span>
+              </div>
+            </button>
 
-          {/* Search Button - Responsive */}
-          <div className="mt-0 md:mt-0 md:-mr-2 md:-my-2 md:flex">
+            <button
+              onClick={() => {
+                setShowCalendar(!showCalendar);
+                setShowGuestsPalette(false);
+              }}
+              type="button"
+              className="group px-4 py-3 text-left rounded-xl hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 border border-gray-200"
+            >
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-gray-900 mb-1">Check out</span>
+                <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {range?.to ? format(range.to, "MMM dd, yyyy") : "Add dates"}
+                </span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => {
+                setShowGuestsPalette(!showGuestsPalette);
+                setShowCalendar(false);
+              }}
+              type="button"
+              className="group px-4 py-3 text-left rounded-xl hover:bg-gray-50 transition-colors focus:outline-none focus:bg-gray-50 border border-gray-200"
+            >
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-gray-900 mb-1">Travelers</span>
+                <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+                  {totalGuests} {totalGuests === 1 ? 'guest' : 'guests'}, {rooms} {rooms === 1 ? 'room' : 'rooms'}
+                </span>
+              </div>
+            </button>
+
             <button
               onClick={handleSearch}
               disabled={!range?.from || !range?.to}
               type="button"
-              className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-b-2xl md:rounded-none px-6 md:px-10 py-4 flex items-center justify-center gap-2.5 font-bold text-lg md:text-base transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:shadow-none cursor-pointer active:scale-[0.98]"
+              className="w-full h-full min-h-18 bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-xl px-6 py-3.5 flex items-center justify-center gap-2 font-bold text-base transition-all focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:shadow-none cursor-pointer active:scale-[0.98]"
             >
-              <svg className="w-6 h-6 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <span>Search</span>
             </button>

@@ -26,12 +26,31 @@ export async function publishProperty(propertyId: string) {
       status: "ACTIVE",
       endsAt: { gt: new Date() },
     },
+    orderBy: { endsAt: "desc" },
+    select: { maxListings: true },
   });
 
   // In production, enforce active subscription.
   // In development, allow publishing without a subscription to simplify testing.
   if (!activeSubscription && process.env.NODE_ENV === "production") {
     throw new Error("Active subscription required to publish");
+  }
+
+  if (activeSubscription && property.status === "DRAFT") {
+    const listedPropertyCount = await prisma.property.count({
+      where: {
+        hostId: user.sub,
+        status: {
+          in: ["PENDING_APPROVAL", "ACTIVE", "INACTIVE"],
+        },
+      },
+    });
+
+    if (listedPropertyCount >= activeSubscription.maxListings) {
+      throw new Error(
+        `You have reached your plan limit (${activeSubscription.maxListings} max listings)`
+      );
+    }
   }
 
   // 3. Image check

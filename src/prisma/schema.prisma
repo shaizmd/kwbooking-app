@@ -188,6 +188,10 @@ model Property {
   @@index([slug])
   @@index([propertyType])
   @@index([averageRating])
+  @@index([title])
+  @@index([location])
+  @@index([city])
+  @@index([district])
 }
 
 // Property images (stored in R2 / S3)

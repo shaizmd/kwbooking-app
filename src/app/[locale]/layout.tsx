@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
 import { locales, localeDirection, type Locale } from "@/config/locales";
 import { Navigation } from "@/components/Navigation";
+import CustomerGlobalSearchBar from "@/components/CustomerGlobalSearchBar";
 import { Footer } from "@/components/Footer";
 import ToastProvider from "@/components/ToastProvider";
 import "../globals.css";
@@ -34,6 +35,7 @@ export default async function LocaleLayout({
       <body className="min-h-screen bg-gray-50 antialiased flex flex-col">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Navigation />
+          <CustomerGlobalSearchBar />
           <main className="flex-1">{children}</main>
           <Footer />
           <ToastProvider />

@@ -13,6 +13,7 @@ export default async function PublicPropertiesPage({
 }: {
   params: Promise<{ locale: string }>;
   searchParams: Promise<{
+    q?: string;
     type?: string;
     sort?: string;
     minPrice?: string;
@@ -25,8 +26,9 @@ export default async function PublicPropertiesPage({
   }>;
 }) {
   const { locale } = await params;
-  const { type, sort, minPrice, maxPrice, checkIn, checkOut, adults, children, rooms } = await searchParams;
+  const { q, type, sort, minPrice, maxPrice, checkIn, checkOut, adults, children, rooms } = await searchParams;
   const t = await getTranslations("properties");
+  const query = q?.trim();
 
   const adultsCount = Math.max(1, Number.parseInt(adults ?? "2", 10) || 2);
   const childrenCount = Math.max(0, Number.parseInt(children ?? "0", 10) || 0);
@@ -86,6 +88,22 @@ export default async function PublicPropertiesPage({
 
   if (roomsCount > 0) {
     whereClause.bedrooms = { gte: roomsCount };
+  }
+
+  if (query) {
+    whereClause.OR = [
+      { title: { contains: query, mode: "insensitive" } },
+      { titleAr: { contains: query, mode: "insensitive" } },
+      { location: { contains: query, mode: "insensitive" } },
+      { locationAr: { contains: query, mode: "insensitive" } },
+      { address: { contains: query, mode: "insensitive" } },
+      { addressAr: { contains: query, mode: "insensitive" } },
+      { city: { contains: query, mode: "insensitive" } },
+      { cityAr: { contains: query, mode: "insensitive" } },
+      { district: { contains: query, mode: "insensitive" } },
+      { districtAr: { contains: query, mode: "insensitive" } },
+      { country: { contains: query, mode: "insensitive" } },
+    ];
   }
 
   // Note: We no longer filter out unavailable properties here

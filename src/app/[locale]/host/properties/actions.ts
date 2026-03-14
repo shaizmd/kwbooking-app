@@ -19,6 +19,37 @@ const propertySchema = z.object({
 export async function createProperty(data: unknown) {
   const user = await requireRole("HOST");
 
+  const activeSubscription = await prisma.subscription.findFirst({
+    where: {
+      hostId: user.sub,
+      status: "ACTIVE",
+      endsAt: { gt: new Date() },
+    },
+    orderBy: { endsAt: "desc" },
+    select: { maxListings: true },
+  });
+
+  if (!activeSubscription && process.env.NODE_ENV === "production") {
+    throw new Error("Active subscription required to add a property");
+  }
+
+  if (activeSubscription) {
+    const existingPropertyCount = await prisma.property.count({
+      where: {
+        hostId: user.sub,
+        status: {
+          in: ["DRAFT", "PENDING_APPROVAL", "ACTIVE", "INACTIVE", "REJECTED"],
+        },
+      },
+    });
+
+    if (existingPropertyCount >= activeSubscription.maxListings) {
+      throw new Error(
+        `Property limit reached for your plan (${activeSubscription.maxListings} max listings)`
+      );
+    }
+  }
+
   const parsed = propertySchema.safeParse(data);
   if (!parsed.success) {
     throw new Error("Invalid property data");
